@@ -1,0 +1,4 @@
+numpy
+aws-cli
+boto3
+zenml==0.57.0
