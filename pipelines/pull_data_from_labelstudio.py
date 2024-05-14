@@ -11,15 +11,15 @@ import os
 dotenv.load_dotenv()
 
 
-
-API_ROOT = os.getenv("LS_API_TOKEN")
+API_ROOT = os.getenv("LS_API_ROOT")
+LS_API_TOKEN = os.getenv("LS_API_TOKEN")
 
 id = "1"
 exportType = "JSON"
 output_filename = 'may14annotations.json'
 
 # Initialize the Label Studio SDK client with the additional headers
-ls = Client(url=API_ROOT, api_key=API_ROOT)
+ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
 
 # Get the project
 project = ls.get_project(id)
