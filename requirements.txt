@@ -2,3 +2,5 @@ numpy
 aws-cli
 boto3
 zenml[server]
+scikit-learn
+mlflow
