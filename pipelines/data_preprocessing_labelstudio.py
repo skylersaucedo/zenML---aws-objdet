@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import cv2
 
+from zenml import step
+from zenml.logger import get_logger
+
 dotenv.load_dotenv()
 
 API_ROOT = os.getenv("LS_API_ROOT")
@@ -47,6 +50,7 @@ def export_labelstudio_video_annotations(ls,id):
     tasks = project.export_tasks(export_type='JSON', download_all_tasks=True)
     return tasks
 
+@step
 def create_dataset(tasks):
     """
     pass label studio tasks JSON object, return dataframe 
