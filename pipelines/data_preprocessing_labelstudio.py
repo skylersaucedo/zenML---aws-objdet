@@ -28,9 +28,6 @@ logger = get_logger(__name__)
 API_ROOT = os.getenv("LS_API_ROOT")
 LS_API_TOKEN = os.getenv("LS_API_TOKEN")
 
-# Initialize the Label Studio SDK client with the additional headers
-ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
-
 id = "1"
 exportType = "JSON"
 output_filename = 'may14annotations.json'
@@ -69,6 +66,7 @@ def create_dataset(
     'local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame'
     ### images saved locally and to AWS s3 bucket
     """
+    # Initialize the Label Studio SDK client with the additional headers
     ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
     tasks = export_labelstudio_video_annotations(ls,id)
     
