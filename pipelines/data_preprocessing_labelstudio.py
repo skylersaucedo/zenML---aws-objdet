@@ -2,6 +2,7 @@
 Use this to pull data from label studio
 raw data is annotated videos
 we need to convert to images and save to S3
+Make sure AWS credentials are stored in .env 
 """
 
 from label_studio_sdk import Client
@@ -20,27 +21,25 @@ dotenv.load_dotenv()
 API_ROOT = os.getenv("LS_API_ROOT")
 LS_API_TOKEN = os.getenv("LS_API_TOKEN")
 
+# Initialize the Label Studio SDK client with the additional headers
+ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
+
 id = "1"
 exportType = "JSON"
 output_filename = 'may14annotations.json'
 csv_path = os.getcwd() + "\\"+"may15annos.csv"
 
-
-# Initialize the Label Studio SDK client with the additional headers
-ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
-
-
-# csv
-project.export_tasks(export_type='CSV', export_location=csv_path)
-
-
-# remove local ref
 # image must be saved locally to geenrate binary from img2rec.py
 # 
 
-def export_labelstudio_video_annos_csv(ls,id):
+def export_labelstudio_video_annos_csv(ls,id,csv_path):
+    
+    # csv
+    project = ls.get_project(id)
+    project.export_tasks(export_type='CSV', export_location=csv_path)
 
 def export_labelstudio_video_annotations(ls,id):
+    """generate tasks JSON to create dataset"""
     # Get the project
     project = ls.get_project(id)
 
@@ -112,7 +111,6 @@ def create_dataset(tasks):
                         
                         f = cv2.cvtColor(f_p, cv2.COLOR_BGR2RGB) # convert to correct color sequence    
                         img = np.asarray(f)
-                        #print('shape of img: ', np.shape(img))
                         
                         h, w, c = img.shape
                     
@@ -128,7 +126,7 @@ def create_dataset(tasks):
                         
                         # add rect
                         color = (0, 0, 255) # Blue color in RGB
-                        thickness = 10 # Line thickness of 2 px 
+                        thickness = 10 # Line thickness 
                         
                         start_point = (int(x),int(y+height)) # top left
                         end_point = (int(x+width),int(y)) # bottom right
