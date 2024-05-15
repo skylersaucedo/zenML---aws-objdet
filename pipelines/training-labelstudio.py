@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from steps import (
     compute_performance_metrics_on_current_data,
-    data_loader,
+    dataloader_labelstudio,
     hp_tuning_select_best_model,
     hp_tuning_single_search,
     model_evaluator,
@@ -61,18 +61,22 @@ def e2e_use_case_training(
     # Link all the steps together by calling them and passing the output
     # of one step as the input of the next step.
     ########## ETL stage ##########
-    raw_data, target, _ = data_loader(random_state=random.randint(0, 100))
-    dataset_trn, dataset_tst = train_data_splitter(
-        dataset=raw_data,
-        test_size=test_size,
-    )
-    dataset_trn, dataset_tst, _ = train_data_preprocessor(
-        dataset_trn=dataset_trn,
-        dataset_tst=dataset_tst,
-        drop_na=drop_na,
-        normalize=normalize,
-        drop_columns=drop_columns,
-    )
+    
+    df, target, random_state = dataloader_labelstudio("1")
+    # raw_data, target, _ = data_loader(random_state=random.randint(0, 100))
+    # dataset_trn, dataset_tst = train_data_splitter(
+    #     dataset=raw_data,
+    #     test_size=test_size,
+    # )
+    # dataset_trn, dataset_tst, _ = train_data_preprocessor(
+    #     dataset_trn=dataset_trn,
+    #     dataset_tst=dataset_tst,
+    #     drop_na=drop_na,
+    #     normalize=normalize,
+    #     drop_columns=drop_columns,
+    # )
+    
+    
     ########## Hyperparameter tuning stage ##########
     after = []
     search_steps_prefix = "hp_tuning_search_"
