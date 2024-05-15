@@ -6,3 +6,4 @@ scikit-learn
 mlflow
 label-studio-sdk
 python-dotenv
+opencv-python
