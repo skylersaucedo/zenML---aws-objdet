@@ -15,11 +15,15 @@ import boto3
 import matplotlib.pyplot as plt
 from datetime import datetime
 import cv2
+from typing_extensions import Annotated
+from typing import Tuple
 
 from zenml import step
 from zenml.logger import get_logger
 
 dotenv.load_dotenv()
+
+logger = get_logger(__name__)
 
 API_ROOT = os.getenv("LS_API_ROOT")
 LS_API_TOKEN = os.getenv("LS_API_TOKEN")
@@ -51,7 +55,13 @@ def export_labelstudio_video_annotations(ls,id):
     return tasks
 
 @step
-def create_dataset(tasks):
+def create_dataset(
+    id:int
+) -> Tuple[
+        Annotated[pd.DataFrame, "dataset"],
+        Annotated[str, "target"],
+        Annotated[int,"random_state"],
+]:
     """
     pass label studio tasks JSON object, return dataframe 
     task is JSON video label
@@ -59,10 +69,16 @@ def create_dataset(tasks):
     'local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame'
     ### images saved locally and to AWS s3 bucket
     """
+    ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
+    tasks = export_labelstudio_video_annotations(ls,id)
+    
+    target = "fixtargetlater"
+    random_state = "999"
     annotations = []
     img_data_savepath =  os.getcwd() + "\\"+ "May15-tape-exp-data"
     s3_bucket_savedimages = "tape-experiment-april6"
-    
+    cols = ['local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame']
+
     for i, job in enumerate(tasks): # each task is a labeled video
         
         annos = job['annotations']
@@ -71,7 +87,7 @@ def create_dataset(tasks):
         if len(annos) == 1: # video is annotated
                     
             vid_s3_path = data['video']
-            print('viewing annos for: ', vid_s3_path)
+            logger.info(f"viewing annos for: {vid_s3_path} ")
             
             # @TODO: flesh out info from vid name...
             pipe_id = '1000'
@@ -152,7 +168,6 @@ def create_dataset(tasks):
                         # save locally, send to S3
                         
                         dt = datetime.today().strftime('%Y%m%d%H%M%S')
-                        print('datetime: ', dt)
                         
                         filename = f"{pipe_id}_{dt}_{side}_{passnum}_{cam}_{frame}_{label}.png"
                         local_filepath = img_data_savepath + '\\' + filename
@@ -161,18 +176,21 @@ def create_dataset(tasks):
                         # send image to s3
                         s3b = boto3.resource('s3')
                         s3b.Bucket(s3_bucket_savedimages).upload_file(local_filepath, filename)
-                        print('file saved to s3!', local_filepath)
+                        
+                        #print('file saved to s3!', local_filepath)
+                        logger.info(f"file saved to s3! {local_filepath} ")
                         
                         # add image, annotation, label, to dataframe 
                         annotations.append([local_filepath,filename,label,xmin,xmax,ymin,ymax,pipe_id,dt,side,passnum,cam,filename,frame])
-
+                        # make df
+                        df = pd.DataFrame(data=annotations, columns=cols)
                         
                     else:
-                        print('ERROR  with frame for: ', vid_s3_path)
+                        #print('ERROR  with frame for: ', vid_s3_path)
+                        logger.info(f"ERROR with frame {frame} for {vid_s3_path}")
                     
     # make df
-    cols = ['local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame']
-    return pd.DataFrame(data=annotations, columns=cols)
+    return df, target, random_state
 
 
 
