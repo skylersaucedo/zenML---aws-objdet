@@ -107,7 +107,7 @@ def create_dataset(tasks):
                     video.set(cv2.CAP_PROP_POS_FRAMES, frame)
                     ret, f_p = video.read()
                                     
-                    if len(f_p) > 0: # need to make sure image is made from video
+                    if f_p is not None: # need to make sure image is made from video
                         
                         f = cv2.cvtColor(f_p, cv2.COLOR_BGR2RGB) # convert to correct color sequence    
                         img = np.asarray(f)
