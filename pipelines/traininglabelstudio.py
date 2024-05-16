@@ -159,27 +159,11 @@ def e2e_use_case_training(
     """
     
     # make rec file for AWS injection
-
-    RESIZE_SIZE = 512 # 256 adjust this later # 512 gave us 0.74 mAP 
-    
-    #train_dir = r'C:\Users\Administrator\Desktop\april6-tape-exp-data'
-    
-    #folder where images are stored locally 
-    train_dir = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data'
-    
-    #parser.parse_args(['--sum', '7', '-1', '42'])
-    
-    # need to convert this into a call
-    #!python tools/im2rec.py --resize $RESIZE_SIZE --pack-label tape-exp-test.lst $train_dir
-    
-    # invoke im2rec.py too
-    
+         
     resize_val = 512
-        
-    #im2rec_entrypoint(resize_val, lstname, train_dir)
     lstlocation = 'tape-exp-test.lst'
-    root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data'
-    os.system(f"python utils\im2rec.py --resize {RESIZE_SIZE} --pack-label {lstlocation} {root_folder}")
+    root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data' #folder where images are stored locally
+    os.system(f"python utils\im2rec.py --resize {resize_val} --pack-label {lstlocation} {root_folder}") # run im2rec.py
 
     
     """
