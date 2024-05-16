@@ -1,6 +1,9 @@
 #ignore files generated during datapreprocessing
 .csv
 .lst
+.rec
+
+
 #ignore huggingface
 summarizeApp
 #ignore fine-tuning
