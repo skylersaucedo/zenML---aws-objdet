@@ -1,5 +1,5 @@
 numpy
-aws-cli
+awscli
 boto3
 zenml[server]
 scikit-learn
@@ -7,3 +7,5 @@ mlflow
 label-studio-sdk
 python-dotenv
 opencv-python
+mxnet
+argparse

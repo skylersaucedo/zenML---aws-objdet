@@ -7,6 +7,13 @@ import random
 from typing import Any, Dict, List, Optional
 import cv2
 import boto3
+import pandas as pd
+import os
+import csv
+from sklearn.model_selection import train_test_split
+import argparse
+
+from utils.im2rec import entrypoint
 
 from steps import (
     compute_performance_metrics_on_current_data,
@@ -30,13 +37,11 @@ logger = get_logger(__name__)
 def one_hot_label(label):
     """
     one hot encode label from string to int
-    unknown class is 0 for now..
-    @TODO = csv file?
     """
     r = 4
-    if label == 'blue tape':
+    if label == 'blue_tape':
         r = 0
-    if label == 'black tape':
+    if label == 'black_tape':
         r = 1
     if label == 'gum':
         r = 2
@@ -82,16 +87,26 @@ def e2e_use_case_training(
     # of one step as the input of the next step.
     ########## ETL stage ##########
     
-    df, target, random_state = dataloader_labelstudio("1")
+    """
+    Pull data from label studio environment. 
+    Using dataloader_labelstudio takes 70+mins
+    Using stored csv for now.
+    """
+    
+    #df, target, random_state = dataloader_labelstudio("1")
+    
+    # use preloaded CSV file for df
+    csv_file_name = os.getcwd() + "\\"+"may15annos.csv"
+    df = pd.read_csv(csv_file_name)
+    target = "target-csv" 
+    random_state = 42
     
     """
     split df into test/train 
     """
-    from sklearn.model_selection import train_test_split
 
     split = 0.8 # train/test split ratio
     train_df, test_df = train_test_split(df, test_size=1-split)
-    train_df
     
     """
     prepare df for LST file
@@ -123,10 +138,8 @@ def e2e_use_case_training(
     """
     write LST file
     """
-    import csv
-
     # now write out .lst file
-    lstname = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\tape-exp-test.lst'
+    lstname = os.getcwd() + "\\"+"tape-exp-test.lst"
     with open(lstname, 'w', newline = '') as out:
         for row in final:
             writer = csv.writer(out, delimiter = '\t')
@@ -141,11 +154,17 @@ def e2e_use_case_training(
     # make rec file for AWS injection
 
     RESIZE_SIZE = 512 # 256 adjust this later # 512 gave us 0.74 mAP 
-    train_dir = r'C:\Users\Administrator\Desktop\april6-tape-exp-data'
+    
+    #train_dir = r'C:\Users\Administrator\Desktop\april6-tape-exp-data'
+    train_dir = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data'
+    
+    #parser.parse_args(['--sum', '7', '-1', '42'])
     
     # need to convert this into a call
-    !python tools/im2rec.py --resize $RESIZE_SIZE --pack-label tape-exp-test.lst $train_dir
+    #!python tools/im2rec.py --resize $RESIZE_SIZE --pack-label tape-exp-test.lst $train_dir
     
+    # invoke im2rec.py too
+    entrypoint()
     """
     send rec file to s3
     """
