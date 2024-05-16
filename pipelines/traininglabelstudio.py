@@ -13,7 +13,6 @@ import csv
 from sklearn.model_selection import train_test_split
 import argparse
 
-from utils.im2rec import im2rec_entrypoint
 
 # from steps import (
 #     compute_performance_metrics_on_current_data,
@@ -32,7 +31,8 @@ from utils.im2rec import im2rec_entrypoint
 from steps import (
     compute_performance_metrics_on_current_data,
     dataloader_labelstudio,
-    notify_on_failure
+    notify_on_failure,
+    notify_on_success
 )
 
 
@@ -57,9 +57,13 @@ def one_hot_label(label):
         
     return r
 
+async def run_model_fit(od_model,data_channels):
+    """use this so it doesn't muck up the pipeline"""
+    od_model.fit(inputs=data_channels, logs=True)
+
 
 @pipeline(on_failure=notify_on_failure)
-def e2e_use_case_training(
+def tsimlopsdti(
     model_search_space: Dict[str, Any],
     target_env: str,
     test_size: float = 0.2,
@@ -251,7 +255,7 @@ def e2e_use_case_training(
     changing to ml.p3.8xlarge <--- need to change service quotas
     """
 
-    inst_type = "ml.p3.8xlarge" #<---costly, and haven't been given 100% usage from AWS yet...
+    inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
 
     od_model = sagemaker.estimator.Estimator(
         training_image,
@@ -315,7 +319,8 @@ def e2e_use_case_training(
     initiate training
     """
 
-    od_model.fit(inputs=data_channels, logs=True)
+    #od_model.fit(inputs=data_channels, logs=True)
+    run_model_fit(od_model,data_channels)
 
     # raw_data, target, _ = data_loader(random_state=random.randint(0, 100))
     # dataset_trn, dataset_tst = train_data_splitter(
@@ -331,53 +336,54 @@ def e2e_use_case_training(
     # )
     
     
-    ########## Hyperparameter tuning stage ##########
-    after = []
-    search_steps_prefix = "hp_tuning_search_"
-    for config_name, model_search_configuration in model_search_space.items():
-        step_name = f"{search_steps_prefix}{config_name}"
-        hp_tuning_single_search(
-            id=step_name,
-            model_package=model_search_configuration["model_package"],
-            model_class=model_search_configuration["model_class"],
-            search_grid=model_search_configuration["search_grid"],
-            dataset_trn=dataset_trn,
-            dataset_tst=dataset_tst,
-            target=target,
-        )
-        after.append(step_name)
-    best_model = hp_tuning_select_best_model(step_names=after, after=after)
+    # ########## Hyperparameter tuning stage ##########
+    # after = []
+    # search_steps_prefix = "hp_tuning_search_"
+    # for config_name, model_search_configuration in model_search_space.items():
+    #     step_name = f"{search_steps_prefix}{config_name}"
+    #     hp_tuning_single_search(
+    #         id=step_name,
+    #         model_package=model_search_configuration["model_package"],
+    #         model_class=model_search_configuration["model_class"],
+    #         search_grid=model_search_configuration["search_grid"],
+    #         dataset_trn=dataset_trn,
+    #         dataset_tst=dataset_tst,
+    #         target=target,
+    #     )
+    #     after.append(step_name)
+    # best_model = hp_tuning_select_best_model(step_names=after, after=after)
 
-    ########## Training stage ##########
-    model = model_trainer(
-        dataset_trn=dataset_trn,
-        model=best_model,
-        target=target,
-    )
-    model_evaluator(
-        model=model,
-        dataset_trn=dataset_trn,
-        dataset_tst=dataset_tst,
-        min_train_accuracy=min_train_accuracy,
-        min_test_accuracy=min_test_accuracy,
-        fail_on_accuracy_quality_gates=fail_on_accuracy_quality_gates,
-        target=target,
-    )
-    ########## Promotion stage ##########
-    latest_metric, current_metric = (
-        compute_performance_metrics_on_current_data(
-            dataset_tst=dataset_tst,
-            target_env=target_env,
-            after=["model_evaluator"],
-        )
-    )
+    # ########## Training stage ##########
+    # model = model_trainer(
+    #     dataset_trn=dataset_trn,
+    #     model=best_model,
+    #     target=target,
+    # )
+    # model_evaluator(
+    #     model=model,
+    #     dataset_trn=dataset_trn,
+    #     dataset_tst=dataset_tst,
+    #     min_train_accuracy=min_train_accuracy,
+    #     min_test_accuracy=min_test_accuracy,
+    #     fail_on_accuracy_quality_gates=fail_on_accuracy_quality_gates,
+    #     target=target,
+    # )
+    # ########## Promotion stage ##########
+    # latest_metric, current_metric = (
+    #     compute_performance_metrics_on_current_data(
+    #         dataset_tst=dataset_tst,
+    #         target_env=target_env,
+    #         after=["model_evaluator"],
+    #     )
+    # )
 
-    promote_with_metric_compare(
-        latest_metric=latest_metric,
-        current_metric=current_metric,
-        target_env=target_env,
-    )
+    # promote_with_metric_compare(
+    #     latest_metric=latest_metric,
+    #     current_metric=current_metric,
+    #     target_env=target_env,
+    # )
     last_step = "promote_with_metric_compare"
+    #last_step = "doneskis!"
 
     notify_on_success(after=[last_step])
     ### YOUR CODE ENDS HERE ###

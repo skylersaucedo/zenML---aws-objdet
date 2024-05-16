@@ -28,7 +28,8 @@ import click
 # )
 
 from pipelines import (
-    e2e_use_case_training
+    tsimlopsdti
+    
 )
 
 from zenml.logger import get_logger
@@ -186,9 +187,9 @@ def main(
             "train_config.yaml",
         )
         pipeline_args["run_name"] = (
-            f"e2e_use_case_training_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
+            f"tsimlopsdti_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         )
-        e2e_use_case_training.with_options(**pipeline_args)(**run_args_train)
+        tsimlopsdti.with_options(**pipeline_args)(**run_args_train)
         logger.info("Training pipeline finished successfully!")
 
     # Execute Deployment Pipeline
