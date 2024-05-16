@@ -20,10 +20,15 @@ from datetime import datetime as dt
 from typing import Optional
 
 import click
+
+# from pipelines import (
+#     e2e_use_case_batch_inference,
+#     e2e_use_case_deployment,
+#     e2e_use_case_training,
+# )
+
 from pipelines import (
-    e2e_use_case_batch_inference,
-    e2e_use_case_deployment,
-    e2e_use_case_training,
+    e2e_use_case_training
 )
 
 from zenml.logger import get_logger

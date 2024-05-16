@@ -15,19 +15,26 @@ import argparse
 
 from utils.im2rec import entrypoint
 
+# from steps import (
+#     compute_performance_metrics_on_current_data,
+#     dataloader_labelstudio,
+#     hp_tuning_select_best_model,
+#     hp_tuning_single_search,
+#     model_evaluator,
+#     model_trainer,
+#     notify_on_failure,
+#     notify_on_success,
+#     promote_with_metric_compare,
+#     train_data_preprocessor,
+#     train_data_splitter,
+# )
+
 from steps import (
     compute_performance_metrics_on_current_data,
     dataloader_labelstudio,
-    hp_tuning_select_best_model,
-    hp_tuning_single_search,
-    model_evaluator,
-    model_trainer,
-    notify_on_failure,
-    notify_on_success,
-    promote_with_metric_compare,
-    train_data_preprocessor,
-    train_data_splitter,
+    notify_on_failure
 )
+
 
 from zenml import pipeline
 from zenml.logger import get_logger

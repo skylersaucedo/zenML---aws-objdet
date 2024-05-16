@@ -53,7 +53,7 @@ def export_labelstudio_video_annotations(ls,id):
 
 @step
 def dataloader_labelstudio(
-    id:int
+    labelstudioid:int
 ) -> Tuple[
     Annotated[pd.DataFrame, "dataset"],
     Annotated[str, "target"],

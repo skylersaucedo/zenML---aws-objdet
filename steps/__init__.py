@@ -19,7 +19,7 @@
 from .alerts import notify_on_failure, notify_on_success
 from .data_quality import drift_quality_gate
 from .etl import (
-    data_loader,
+    dataloader_labelstudio,
     inference_data_preprocessor,
     train_data_preprocessor,
     train_data_splitter,
@@ -30,5 +30,5 @@ from .promotion import (
     compute_performance_metrics_on_current_data,
     promote_with_metric_compare,
 )
-from .training import model_evaluator, model_trainer
+#from .training import model_evaluator, model_trainer
 from .deployment import deployment_deploy
