@@ -325,26 +325,37 @@ def parse_args():
     args.root = os.path.abspath(args.root)
     return args
 
-def entrypoint():
+def im2rec_entrypoint(resize, lstfilepath, local_images_dir):
     """use this to execute main directly from pipeline"""
+    # args = parse_args(
+    #     ['--resize', str(resize)],
+    #     ['--pack-label', 0],
+    #     ['-prefix', lstfilepath],
+    #     ['-root', local_images_dir]
+    #     )
+    
+    print('entering im2recentrypoint')
+    
     args = parse_args()
     
-    #args = parse_args(['--pack-label'])
+    print('blastin!')
+
+    print('args.prefix: ', args.prefix)
+        
+    args.prefix = lstfilepath
+    args.root = local_images_dir
+    args.resize = resize
     
-    print('resize before: ', args.resize)
-    
-    args.resize = 512
-    args.pack_label = 0
-    
-    #args.pack-label = true
-    
-    print('resize after: ', args.resize)
-    
+    print('args.prefix: ', args.resize)
+
+
     # if the '--list' is used, it generates .lst file
     if args.list:
         make_list(args)
     # otherwise read .lst file to generates .rec file
     else:
+        
+        print('args.prefix: ', args.prefix)
         if os.path.isdir(args.prefix):
             working_dir = args.prefix
         else:

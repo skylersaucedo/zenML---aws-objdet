@@ -13,7 +13,7 @@ import csv
 from sklearn.model_selection import train_test_split
 import argparse
 
-from utils.im2rec import entrypoint
+from utils.im2rec import im2rec_entrypoint
 
 # from steps import (
 #     compute_performance_metrics_on_current_data,
@@ -163,6 +163,8 @@ def e2e_use_case_training(
     RESIZE_SIZE = 512 # 256 adjust this later # 512 gave us 0.74 mAP 
     
     #train_dir = r'C:\Users\Administrator\Desktop\april6-tape-exp-data'
+    
+    #folder where images are stored locally 
     train_dir = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data'
     
     #parser.parse_args(['--sum', '7', '-1', '42'])
@@ -171,7 +173,15 @@ def e2e_use_case_training(
     #!python tools/im2rec.py --resize $RESIZE_SIZE --pack-label tape-exp-test.lst $train_dir
     
     # invoke im2rec.py too
-    entrypoint()
+    
+    resize_val = 512
+        
+    #im2rec_entrypoint(resize_val, lstname, train_dir)
+    lstlocation = 'tape-exp-test.lst'
+    root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data'
+    os.system(f"python utils\im2rec.py --resize {RESIZE_SIZE} --pack-label {lstlocation} {root_folder}")
+
+    
     """
     send rec file to s3
     """
