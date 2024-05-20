@@ -14,6 +14,13 @@ from sklearn.model_selection import train_test_split
 import argparse
 
 
+
+from zenml import pipeline
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
+
+
 # from steps import (
 #     compute_performance_metrics_on_current_data,
 #     dataloader_labelstudio,
@@ -28,38 +35,30 @@ import argparse
 #     train_data_splitter,
 # )
 
+# from steps import (
+#     compute_performance_metrics_on_current_data,
+#     dataloader_labelstudio,
+#     notify_on_failure,
+#     notify_on_success
+# )
+
 from steps import (
-    compute_performance_metrics_on_current_data,
-    dataloader_labelstudio,
+    pull_annos_from_labelstudio,
+    generate_lst_file,
+    generate_rec_file,
+    sagemaker_datachannels,
+    sagemaker_define_model,
+    sagemaker_run_training,
     notify_on_failure,
     notify_on_success
 )
 
 
-from zenml import pipeline
-from zenml.logger import get_logger
 
-logger = get_logger(__name__)
 
-def one_hot_label(label):
-    """
-    one hot encode label from string to int
-    """
-    r = 4
-    if label == 'blue_tape':
-        r = 0
-    if label == 'black_tape':
-        r = 1
-    if label == 'gum':
-        r = 2
-    if label == 'leaf':
-        r = 3
-        
-    return r
-
-async def run_model_fit(od_model,data_channels):
-    """use this so it doesn't muck up the pipeline"""
-    od_model.fit(inputs=data_channels, logs=True)
+# async def run_model_fit(od_model,data_channels):
+#     """use this so it doesn't muck up the pipeline"""
+#     od_model.fit(inputs=data_channels, logs=True)
 
 
 @pipeline(on_failure=notify_on_failure)

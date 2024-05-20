@@ -31,19 +31,19 @@ settings:
 steps:
   model_trainer:
     parameters:
-      name: e2e_use_case
+      name: tsimlopsdti
   promote_with_metric_compare:
     parameters:
-      mlflow_model_name: e2e_use_case
+      mlflow_model_name: tsimlopsdti
   notify_on_success:
     parameters:
       notify_on_success: False
 
 # configuration of the Model Control Plane
 model:
-  name: e2e_use_case
+  name: tsimlopsdti
   license: apache
-  description: e2e_use_case E2E Batch Use Case
+  description: tsimlopsdti from ZenML's E2E Batch Use Case
   audience: All ZenML users
   use_cases: |
     The ZenML E2E project project demonstrates how the most important steps of 
@@ -52,10 +52,10 @@ model:
     into pipelines for Training and Batch Inference purposes.
   ethics: No impact.
   tags:
-  - e2e
-  - batch
-  - sklearn
-  - from template
+  - Sagemaker
+  - RetinaNet
+  - Computer Vision
+  - retraining
   - ZenML delivered
 
 # pipeline level extra configurations
