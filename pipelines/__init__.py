@@ -6,4 +6,4 @@ First 3 are original inits... start with one
 # from .training import e2e_use_case_training
 # from .deployment import e2e_use_case_deployment
 
-from .traininglabelstudio import tsimlopsdti
+from .traininglabelstudio import training_pipeline

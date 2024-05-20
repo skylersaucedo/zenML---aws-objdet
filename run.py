@@ -18,6 +18,7 @@
 import os
 from datetime import datetime as dt
 from typing import Optional
+from utils.constants import ZENML_MODEL_NAME
 
 import click
 
@@ -28,18 +29,20 @@ import click
 # )
 
 from pipelines import (
-    tsimlopsdti
+    training_pipeline
     
 )
 
 from zenml.logger import get_logger
+from zenml.client import Client
+#from zenml.enums import ModelStages
 
 logger = get_logger(__name__)
 
 
 @click.command(
     help="""
-ZenML E2E project CLI v0.0.1.
+TSI ML OPS project CLI v1.0.0.
 
 Run the ZenML E2E project model training pipeline with various
 options.
@@ -73,71 +76,74 @@ Examples:
 
 """
 )
+
 @click.option(
-    "--no-cache",
-    is_flag=True,
-    default=False,
-    help="Disable caching for the pipeline run.",
+    "--tsi-train", 
+    "--training",
+    "-t",
+    "train",
+    is_flag = True,
+    default = False,
+    help="Activate TSI training sequence"
 )
-@click.option(
-    "--no-drop-na",
-    is_flag=True,
-    default=False,
-    help="Whether to skip dropping rows with missing values in the dataset.",
-)
-@click.option(
-    "--no-normalize",
-    is_flag=True,
-    default=False,
-    help="Whether to skip normalization in the dataset.",
-)
-@click.option(
-    "--drop-columns",
-    default=None,
-    type=click.STRING,
-    help="Comma-separated list of columns to drop from the dataset.",
-)
-@click.option(
-    "--test-size",
-    default=0.2,
-    type=click.FloatRange(0.0, 1.0),
-    help="Proportion of the dataset to include in the test split.",
-)
-@click.option(
-    "--min-train-accuracy",
-    default=0.8,
-    type=click.FloatRange(0.0, 1.0),
-    help="Minimum training accuracy to pass to the model evaluator.",
-)
-@click.option(
-    "--min-test-accuracy",
-    default=0.8,
-    type=click.FloatRange(0.0, 1.0),
-    help="Minimum test accuracy to pass to the model evaluator.",
-)
-@click.option(
-    "--fail-on-accuracy-quality-gates",
-    is_flag=True,
-    default=False,
-    help="Whether to fail the pipeline run if the model evaluation step "
-    "finds that the model is not accurate enough.",
-)
-@click.option(
-    "--only-inference",
-    is_flag=True,
-    default=False,
-    help="Whether to run only inference pipeline.",
-)
+
+# @click.option(
+#     "--no-cache",
+#     is_flag=True,
+#     default=False,
+#     help="Disable caching for the pipeline run.",
+# )
+# @click.option(
+#     "--no-drop-na",
+#     is_flag=True,
+#     default=False,
+#     help="Whether to skip dropping rows with missing values in the dataset.",
+# )
+# @click.option(
+#     "--no-normalize",
+#     is_flag=True,
+#     default=False,
+#     help="Whether to skip normalization in the dataset.",
+# )
+# @click.option(
+#     "--drop-columns",
+#     default=None,
+#     type=click.STRING,
+#     help="Comma-separated list of columns to drop from the dataset.",
+# )
+# @click.option(
+#     "--test-size",
+#     default=0.2,
+#     type=click.FloatRange(0.0, 1.0),
+#     help="Proportion of the dataset to include in the test split.",
+# )
+# @click.option(
+#     "--min-train-accuracy",
+#     default=0.8,
+#     type=click.FloatRange(0.0, 1.0),
+#     help="Minimum training accuracy to pass to the model evaluator.",
+# )
+# @click.option(
+#     "--min-test-accuracy",
+#     default=0.8,
+#     type=click.FloatRange(0.0, 1.0),
+#     help="Minimum test accuracy to pass to the model evaluator.",
+# )
+# @click.option(
+#     "--fail-on-accuracy-quality-gates",
+#     is_flag=True,
+#     default=False,
+#     help="Whether to fail the pipeline run if the model evaluation step "
+#     "finds that the model is not accurate enough.",
+# )
+# @click.option(
+#     "--only-inference",
+#     is_flag=True,
+#     default=False,
+#     help="Whether to run only inference pipeline.",
+#)
 def main(
-    no_cache: bool = False,
-    no_drop_na: bool = False,
-    no_normalize: bool = False,
-    drop_columns: Optional[str] = None,
-    test_size: float = 0.2,
-    min_train_accuracy: float = 0.8,
-    min_test_accuracy: float = 0.8,
-    fail_on_accuracy_quality_gates: bool = False,
-    only_inference: bool = False,
+    train: bool = False
 ):
     """Main entry point for the pipeline execution.
 
@@ -164,22 +170,62 @@ def main(
     # Run a pipeline with the required parameters. This executes
     # all steps in the pipeline in the correct order using the orchestrator
     # stack component that is configured in your active ZenML stack.
-    pipeline_args = {}
-    if no_cache:
-        pipeline_args["enable_cache"] = False
+    
+    client = Client()
+    
+    # pipeline_args = {}
+    # if no_cache:
+    #     pipeline_args["enable_cache"] = False
+        
+    # Execute Training Pipeline
+    
+    if train:
+        # try:
+        #     client.get_model_version(
+        #         model_name_or_id=ZENML_MODEL_NAME,
+        #         #model_version_name_or_number_or_id=ModelStages.STAGING,
+        #     )
+        # except KeyError:
+        #     raise RuntimeError(
+        #         "This pipeline requires that there is a version of its "
+        #         "associated model in the `STAGING` stage. Make sure you run "
+        #         "the `data_export_pipeline` at least once to create the Model "
+        #         "along with a version of this model. After this you can "
+        #         "promote the version of your choice, either through the "
+        #         "frontend or with the following command: "
+        #         f"`zenml model version update {ZENML_MODEL_NAME} latest "
+        #         f"-s staging`"
+        #     )
 
-    if not only_inference:
-        # Execute Training Pipeline
-        run_args_train = {
-            "drop_na": not no_drop_na,
-            "normalize": not no_normalize,
-            "test_size": test_size,
-            "min_train_accuracy": min_train_accuracy,
-            "min_test_accuracy": min_test_accuracy,
-            "fail_on_accuracy_quality_gates": fail_on_accuracy_quality_gates,
-        }
-        if drop_columns:
-            run_args_train["drop_columns"] = drop_columns.split(",")
+        # if train_local:
+        #     config_path = "configs/training_pipeline.yaml"
+        # else:
+        #     config_path = "configs/training_pipeline_remote_gpu.yaml"
+            
+        #config_path = "configs/training_pipeline.yaml"
+        
+        training_pipeline.with_options(
+            config_path="configs/train_config.yaml"
+        )()
+
+        # Train model on data
+        #training_pipeline.with_options(config_path=config_path)()
+        
+        run_args_train = {}
+        pipeline_args = {}
+    
+    # if not only_inference:
+    #     # Execute Training Pipeline
+    #     run_args_train = {
+    #         "drop_na": not no_drop_na,
+    #         "normalize": not no_normalize,
+    #         "test_size": test_size,
+    #         "min_train_accuracy": min_train_accuracy,
+    #         "min_test_accuracy": min_test_accuracy,
+    #         "fail_on_accuracy_quality_gates": fail_on_accuracy_quality_gates,
+    #     }
+    #     if drop_columns:
+    #         run_args_train["drop_columns"] = drop_columns.split(",")
 
         pipeline_args["config_path"] = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
@@ -189,7 +235,7 @@ def main(
         pipeline_args["run_name"] = (
             f"tsimlopsdti_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         )
-        tsimlopsdti.with_options(**pipeline_args)(**run_args_train)
+        traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
         logger.info("Training pipeline finished successfully!")
 
     # # Execute Deployment Pipeline

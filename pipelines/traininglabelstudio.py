@@ -14,10 +14,7 @@ from sklearn.model_selection import train_test_split
 import argparse
 import sagemaker
 
-from zenml import pipeline
-from zenml.logger import get_logger
-
-logger = get_logger(__name__)
+from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
 
 
 from steps import (
@@ -32,8 +29,14 @@ from steps import (
 )
 
 
+from zenml import pipeline
+from zenml.logger import get_logger
+from zenml import get_pipeline_context
+logger = get_logger(__name__)
+
+
 @pipeline(on_failure=notify_on_failure)
-def tsimlopsdti():
+def training_pipeline():
     """
     Model training pipeline.
 
@@ -56,7 +59,7 @@ def tsimlopsdti():
     
     # 1. grab annos from label studio
     
-    csv_file_name = os.getcwd() + "\\"+"may15annos.csv"
+    csv_file_name = CSV_FILE_NAME
     iscsv = True # use this before directly connecting label studio
 
     df = pull_annos_from_labelstudio(iscsv,csv_file_name)
@@ -66,7 +69,7 @@ def tsimlopsdti():
     
     # 2. make lst file
     
-    lstname = os.getcwd() + "\\"+"tape-exp-test.lst"
+    lstname = LST_FILE_NAME
     
     generate_lst_file(df, lstname)
     
