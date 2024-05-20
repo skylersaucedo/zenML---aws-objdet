@@ -42,7 +42,7 @@ install-stack-local:
 ## Help
 
 ```
-Please reach out to me if you have any questions. This will soon be a private repo.
+Please reach out to me if you have any questions. 
 ```
 
 ## Authors

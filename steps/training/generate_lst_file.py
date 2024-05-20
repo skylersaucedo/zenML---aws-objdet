@@ -35,7 +35,7 @@ def one_hot_label(label):
     return r
 
 @step
-def generate_lst_file(df):
+def generate_lst_file(df, lstname):
 
     final = [] # for lst
 
@@ -47,11 +47,7 @@ def generate_lst_file(df):
         s3_name = row['filename']
         img = cv2.imread(img_pth)
         h, w, c, = img.shape
-        
-        #print(h,w,c)
-        
-        #print(row['filename'])
-        
+                    
         x_min_n = float(row['xmin']) / w
         x_max_n = float(row['xmax']) / w
         y_min_n = float(row['ymin']) / h
@@ -64,7 +60,7 @@ def generate_lst_file(df):
     write LST file
     """
     # now write out .lst file
-    lstname = os.getcwd() + "\\"+"tape-exp-test.lst"
+    
     with open(lstname, 'w', newline = '') as out:
         for row in final:
             writer = csv.writer(out, delimiter = '\t')
