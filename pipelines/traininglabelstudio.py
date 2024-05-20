@@ -86,7 +86,8 @@ def tsimlopsdti():
     prefix = 'retinanet'
     sess = sagemaker.Session()
     model_bucket_path = "s3://tubes-tape-exp-models/"
-    
+    s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
+
     training_image, data_channels = sagemaker_datachannels(sess,rec_name,bucket,prefix,model_bucket_path,s3_bucket)
     
     # 5. define model
