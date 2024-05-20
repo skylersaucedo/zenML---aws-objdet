@@ -54,7 +54,7 @@ def tsimlopsdti():
             are not met - execution will be interrupted early
     """
     
-    # grab annos from label studio
+    # 1. grab annos from label studio
     
     csv_file_name = os.getcwd() + "\\"+"may15annos.csv"
     iscsv = True # use this before directly connecting label studio
@@ -64,13 +64,13 @@ def tsimlopsdti():
     # pull labels, add to dict
     # @TODO: Need to flesh this out :)
     
-    # make lst file
+    # 2. make lst file
     
     lstname = os.getcwd() + "\\"+"tape-exp-test.lst"
     
     generate_lst_file(df, lstname)
     
-    # make rec file
+    # 3. make rec file
     
     resize_val = 512
     lstlocation = 'tape-exp-test.lst'
@@ -80,17 +80,16 @@ def tsimlopsdti():
     s3_bucket = "tape-experiment-april6"
     generate_rec_file(resize_val,lstlocation, root_folder, rec_name, file_name, s3_bucket )
     
-    # invoke sagemaker, upload rec files to aws
+    # 4. invoke sagemaker, upload rec files to aws
     
     bucket = 'tubes-tape-exp-models'
     prefix = 'retinanet'
     sess = sagemaker.Session()
     model_bucket_path = "s3://tubes-tape-exp-models/"
     
-    training_image, data_channels = sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket)
+    training_image, data_channels = sagemaker_datachannels(sess,rec_name,bucket,prefix,model_bucket_path,s3_bucket)
     
-    #define model
-    
+    # 5. define model
     
     try:
         role = sagemaker.get_execution_role()
@@ -109,11 +108,8 @@ def tsimlopsdti():
     
     od_mdl = sagemaker_define_model(sess, role, inst_type, training_image, s3_output_location)
 
-        
-    # kickoff training
+    # 6. kickoff training
     
     sagemaker_run_training(od_mdl,data_channels)
     
-    last_step = "promote_with_metric_compare"
-
-    notify_on_success(after=[last_step])
+    notify_on_success(after=["sagemaker_run_training"])

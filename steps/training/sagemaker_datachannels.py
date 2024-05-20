@@ -16,7 +16,7 @@ Invoke Sagemaker to train model
 """
 
 @step
-def sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket):
+def sagemaker_datachannels(sess,rec_name,bucket,prefix,model_bucket_path,s3_bucket):
     
     s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
     print('output location: ', s3_output_location)
@@ -38,8 +38,8 @@ def sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket):
     train_channel = "train"
     validation_channel = "validation"
 
-    sess.upload_data(path="tape-exp-test.rec", bucket=bucket, key_prefix=train_channel)
-    sess.upload_data(path="tape-exp-test.rec", bucket=bucket, key_prefix=validation_channel)
+    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=train_channel)
+    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=validation_channel)
 
     print('what is sess default bucket: ', sess.default_bucket())
 
@@ -48,7 +48,6 @@ def sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket):
 
     print(s3_train_data)
     print(s3_validation_data)
-    
         
     train_data = sagemaker.inputs.TrainingInput(
         s3_train_data,
