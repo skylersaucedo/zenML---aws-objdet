@@ -1,7 +1,7 @@
 #ignore files generated during datapreprocessing
-.csv
-.lst
-.rec
+*.csv
+*.lst
+*.rec
 
 
 #ignore huggingface
