@@ -23,8 +23,7 @@ changing to ml.p3.8xlarge <--- need to change service quotas
 """
 
 @step
-def make_od_model():
-    inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
+def sagemaker_define_model(sess, role, inst_type, training_image, s3_output_location):
 
     od_model = sagemaker.estimator.Estimator(
         training_image,
@@ -39,3 +38,5 @@ def make_od_model():
     )
 
     print(od_model)
+    
+    return od_model

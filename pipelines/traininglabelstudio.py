@@ -12,6 +12,7 @@ import os
 import csv
 from sklearn.model_selection import train_test_split
 import argparse
+import sagemaker
 
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -56,11 +57,12 @@ def tsimlopsdti():
     # grab annos from label studio
     
     csv_file_name = os.getcwd() + "\\"+"may15annos.csv"
-    iscsv = True
+    iscsv = True # use this before directly connecting label studio
 
     df = pull_annos_from_labelstudio(iscsv,csv_file_name)
     
     # pull labels, add to dict
+    # @TODO: Need to flesh this out :)
     
     # make lst file
     
@@ -69,6 +71,7 @@ def tsimlopsdti():
     generate_lst_file(df, lstname)
     
     # make rec file
+    
     resize_val = 512
     lstlocation = 'tape-exp-test.lst'
     root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data' #folder where images are stored locally
@@ -77,15 +80,39 @@ def tsimlopsdti():
     s3_bucket = "tape-experiment-april6"
     generate_rec_file(resize_val,lstlocation, root_folder, rec_name, file_name, s3_bucket )
     
-    # invoke sagemaker
+    # invoke sagemaker, upload rec files to aws
     
-    # upload rec files to aws
+    bucket = 'tubes-tape-exp-models'
+    prefix = 'retinanet'
+    sess = sagemaker.Session()
+    model_bucket_path = "s3://tubes-tape-exp-models/"
+    
+    training_image, data_channels = sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket)
     
     #define model
     
-    # create channels
     
+    try:
+        role = sagemaker.get_execution_role()
+    except ValueError:
+        iam = boto3.client('iam')
+        role = iam.get_role(RoleName='SkylerSageMakerRole')['Role']['Arn']
+    region = 'us-east-1'
+
+    print('Sagemaker session :', sess)
+    print('default bucket :', bucket)
+    print('Prefix :', prefix)
+    print('Region selected :', region)
+    print('IAM role :', role)
+    
+    inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
+    
+    od_mdl = sagemaker_define_model(sess, role, inst_type, training_image, s3_output_location)
+
+        
     # kickoff training
+    
+    sagemaker_run_training(od_mdl,data_channels)
     
     last_step = "promote_with_metric_compare"
 

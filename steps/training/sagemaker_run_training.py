@@ -17,13 +17,12 @@ logger = get_logger(__name__)
 initiate training on AWS Sagemaker Object Detector
 """
 
-async def run_model_fit(od_model,data_channels):
-    """use this so it doesn't muck up the pipeline"""
-    od_model.fit(inputs=data_channels, logs=True)
+# async def run_model_fit(od_model,data_channels):
+#     """use this so it doesn't muck up the pipeline"""
+#     od_model.fit(inputs=data_channels, logs=True)
     
 @step
-def sagemaker_run_training(od_model,data_channels):
-    
-    #od_model.fit(inputs=data_channels, logs=True)
-    run_model_fit(od_model,data_channels)
+async def sagemaker_run_training(od_model,data_channels):
+    od_model.fit(inputs=data_channels, logs=True)
+    #run_model_fit(od_model,data_channels)
     

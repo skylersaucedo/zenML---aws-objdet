@@ -16,17 +16,13 @@ Invoke Sagemaker to train model
 """
 
 @step
-def sagemaker_datachannels():
+def sagemaker_datachannels(sess,bucket,prefix,model_bucket_path,s3_bucket):
     
-    bucket = 'tubes-tape-exp-models'
-    prefix = 'retinanet'
     s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
-
     print('output location: ', s3_output_location)
 
-    sess = sagemaker.Session()
     training_image = image_uris.retrieve(
-        
+
         region = sess.boto_region_name, framework = "object-detection", version="1"
     )
 
@@ -35,7 +31,7 @@ def sagemaker_datachannels():
     """
     upload binary rec file to AWS
     """
-    pipeline_session = PipelineSession(default_bucket = "s3://tubes-tape-exp-models/")
+    pipeline_session = PipelineSession(default_bucket = model_bucket_path)
 
     # Upload the RecordIO files to train and validation channels
 
@@ -47,9 +43,26 @@ def sagemaker_datachannels():
 
     print('what is sess default bucket: ', sess.default_bucket())
 
-    s3_train_data = "s3://tape-experiment-april6".format(bucket, train_channel)
-    s3_validation_data = "s3://tape-experiment-april6".format(bucket, validation_channel)
+    s3_train_data = f"s3://{s3_bucket}".format(bucket, train_channel)
+    s3_validation_data = f"s3://{s3_bucket}".format(bucket, validation_channel)
 
     print(s3_train_data)
     print(s3_validation_data)
+    
+        
+    train_data = sagemaker.inputs.TrainingInput(
+        s3_train_data,
+        distribution="FullyReplicated",
+        content_type="application/x-recordio",
+        s3_data_type="S3Prefix",
+    )
+    validation_data = sagemaker.inputs.TrainingInput(
+        s3_validation_data,
+        distribution="FullyReplicated",
+        content_type="application/x-recordio",
+        s3_data_type="S3Prefix",
+    )
+    data_channels = {"train": train_data, "validation": validation_data}
+    
+    return training_image, data_channels
     
