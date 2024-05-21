@@ -19,6 +19,7 @@ import os
 from datetime import datetime as dt
 from typing import Optional
 from utils.constants import ZENML_MODEL_NAME
+from uuid import UUID
 
 import click
 
@@ -211,8 +212,29 @@ def main(
         # Train model on data
         #training_pipeline.with_options(config_path=config_path)()
         
-        run_args_train = {}
+        #run_args_train = {}
         pipeline_args = {}
+        
+        
+        num_epochs = 20
+        train_batch_size = 16
+        eval_batch_size = 8
+        learning_rate = 1e-4
+        weight_decay = 1e-6
+        img_size = 512
+        dataset_artifact_id = str(UUID.uuid4())
+        model_artifact_id = str(UUID.uuid4())
+        
+        run_args_train = {
+            "num_epochs": num_epochs,
+            "train_batch_size": train_batch_size,
+            "eval_batch_size": eval_batch_size,
+            "learning_rate": learning_rate,
+            "weight_decay": weight_decay,
+            "img_size": img_size,
+            "dataset_artifact_id": dataset_artifact_id,
+            "model_artifact_id": model_artifact_id,
+        }
     
     # if not only_inference:
     #     # Execute Training Pipeline
