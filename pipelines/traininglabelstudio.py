@@ -56,8 +56,8 @@ if not experiment_tracker or not isinstance(
     )
 
 
-
-@pipeline(on_failure=notify_on_failure, experiment_tracker=experiment_tracker.name)
+#@pipeline(on_failure=notify_on_failure, experiment_tracker=experiment_tracker.name)
+@pipeline(on_failure=notify_on_failure)
 def training_pipeline(
     train_dataset_id: Optional[UUID] = None,
     test_dataset_id: Optional[UUID] = None,
