@@ -19,7 +19,7 @@ import os
 from datetime import datetime as dt
 from typing import Optional
 from utils.constants import ZENML_MODEL_NAME
-from uuid import UUID
+import uuid
 
 import click
 
@@ -204,13 +204,14 @@ def main(
         #     config_path = "configs/training_pipeline_remote_gpu.yaml"
             
         #config_path = "configs/training_pipeline.yaml"
+        config_path="configs/train_config.yaml"
         
-        training_pipeline.with_options(
-            config_path="configs/train_config.yaml"
-        )()
+        # training_pipeline.with_options(
+        #     config_path="configs/train_config.yaml"
+        # )()
 
         # Train model on data
-        #training_pipeline.with_options(config_path=config_path)()
+        training_pipeline.with_options(config_path=config_path)()
         
         #run_args_train = {}
         pipeline_args = {}
@@ -222,8 +223,8 @@ def main(
         learning_rate = 1e-4
         weight_decay = 1e-6
         img_size = 512
-        dataset_artifact_id = str(UUID.uuid4())
-        model_artifact_id = str(UUID.uuid4())
+        dataset_artifact_id = str(uuid.uuid4())
+        model_artifact_id = str(uuid.uuid4())
         
         run_args_train = {
             "num_epochs": num_epochs,
@@ -257,7 +258,13 @@ def main(
         pipeline_args["run_name"] = (
             f"tsimlopsdti_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         )
-        traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
+        
+        print('pipeline args: ', pipeline_args)
+        print('run train agrs: ', run_args_train)
+        
+        #traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
+        training_pipeline.with_options(**pipeline_args)(**run_args_train)
+
         logger.info("Training pipeline finished successfully!")
 
     # # Execute Deployment Pipeline

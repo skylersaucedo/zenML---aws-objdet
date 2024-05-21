@@ -15,6 +15,7 @@ import argparse
 import sagemaker
 
 from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
+from uuid import UUID
 
 
 from steps import (
@@ -30,13 +31,37 @@ from steps import (
 
 
 from zenml import pipeline
+#from zenml.client import Client
 from zenml.logger import get_logger
 from zenml import get_pipeline_context
+
+from zenml import ArtifactConfig, get_step_context, step
+from zenml.client import Client
+from zenml.integrations.mlflow.experiment_trackers import (
+    MLFlowExperimentTracker,
+)
+from zenml.integrations.mlflow.steps.mlflow_registry import (
+    mlflow_register_model_step,
+)
 logger = get_logger(__name__)
+client = Client()
+experiment_tracker = client.active_stack.experiment_tracker
+
+if not experiment_tracker or not isinstance(
+    experiment_tracker, MLFlowExperimentTracker
+):
+    raise RuntimeError(
+        "Your active stack needs to contain a MLFlow experiment tracker for "
+        "this example to work."
+    )
 
 
-@pipeline(on_failure=notify_on_failure)
-def training_pipeline():
+
+@pipeline(on_failure=notify_on_failure, experiment_tracker=experiment_tracker.name)
+def training_pipeline(
+    train_dataset_id: Optional[UUID] = None,
+    test_dataset_id: Optional[UUID] = None,
+):
     """
     Model training pipeline.
 
@@ -56,6 +81,15 @@ def training_pipeline():
         fail_on_accuracy_quality_gates: If `True` and `min_train_accuracy` or `min_test_accuracy`
             are not met - execution will be interrupted early
     """
+    
+
+    
+    dataset_trn = client.get_artifact_version(
+        name_id_or_prefix=train_dataset_id
+        )
+    dataset_tst = client.get_artifact_version(
+        name_id_or_prefix=test_dataset_id
+        )
     
     # 1. grab annos from label studio
     
