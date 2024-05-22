@@ -16,8 +16,9 @@ Invoke Sagemaker to train model
 """
 
 @step
-def sagemaker_datachannels(sess,rec_name,bucket,prefix,model_bucket_path,s3_bucket):
+def sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket):
     
+    sess = sagemaker.Session()
     s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
     print('output location: ', s3_output_location)
 

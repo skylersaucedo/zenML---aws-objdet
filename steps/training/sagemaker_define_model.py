@@ -23,7 +23,8 @@ changing to ml.p3.8xlarge <--- need to change service quotas
 """
 
 @step
-def sagemaker_define_model(sess, role, inst_type, training_image, s3_output_location):
+def sagemaker_define_model(role, inst_type, training_image, s3_output_location):
+    sess = sagemaker.Session()
 
     od_model = sagemaker.estimator.Estimator(
         training_image,

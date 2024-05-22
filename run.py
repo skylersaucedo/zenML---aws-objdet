@@ -211,10 +211,11 @@ def main(
         # )()
 
         # Train model on data
-        training_pipeline.with_options(config_path=config_path)()
-        
+        #training_pipeline.with_options(config_path=config_path)()
+        #training_pipeline.with_options(config_path=config_path)
+
         #run_args_train = {}
-        pipeline_args = {}
+        pipeline_args = {"config_path" : config_path}
         
         
         num_epochs = 20
@@ -264,6 +265,9 @@ def main(
         
         #traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
         training_pipeline.with_options(**pipeline_args)(**run_args_train)
+        #training_pipeline.with_options(**pipeline_args)()
+        #training_pipeline.with_options()()
+        #training_pipeline()
 
         logger.info("Training pipeline finished successfully!")
 

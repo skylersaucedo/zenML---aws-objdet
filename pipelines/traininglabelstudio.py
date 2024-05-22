@@ -12,7 +12,9 @@ import os
 import csv
 from sklearn.model_selection import train_test_split
 import argparse
+
 import sagemaker
+from sagemaker import image_uris
 
 from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
 from uuid import UUID
@@ -31,10 +33,8 @@ from steps import (
 
 
 from zenml import pipeline
-#from zenml.client import Client
 from zenml.logger import get_logger
 from zenml import get_pipeline_context
-
 from zenml import ArtifactConfig, get_step_context, step
 from zenml.client import Client
 from zenml.integrations.mlflow.experiment_trackers import (
@@ -43,6 +43,7 @@ from zenml.integrations.mlflow.experiment_trackers import (
 from zenml.integrations.mlflow.steps.mlflow_registry import (
     mlflow_register_model_step,
 )
+
 logger = get_logger(__name__)
 client = Client()
 experiment_tracker = client.active_stack.experiment_tracker
@@ -59,8 +60,15 @@ if not experiment_tracker or not isinstance(
 #@pipeline(on_failure=notify_on_failure, experiment_tracker=experiment_tracker.name)
 @pipeline(on_failure=notify_on_failure)
 def training_pipeline(
-    train_dataset_id: Optional[UUID] = None,
-    test_dataset_id: Optional[UUID] = None,
+    model_search_space: Dict[str, Any],
+    target_env: str,
+    test_size: float = 0.2,
+    drop_na: Optional[bool] = None,
+    normalize: Optional[bool] = None,
+    drop_columns: Optional[List[str]] = None,
+    min_train_accuracy: float = 0.0,
+    min_test_accuracy: float = 0.0,
+    fail_on_accuracy_quality_gates: bool = False,
 ):
     """
     Model training pipeline.
@@ -81,15 +89,16 @@ def training_pipeline(
         fail_on_accuracy_quality_gates: If `True` and `min_train_accuracy` or `min_test_accuracy`
             are not met - execution will be interrupted early
     """
-    
+    #train_dataset_id: Optional[UUID] = None,
+    #test_dataset_id: Optional[UUID] = None,
 
     
-    dataset_trn = client.get_artifact_version(
-        name_id_or_prefix=train_dataset_id
-        )
-    dataset_tst = client.get_artifact_version(
-        name_id_or_prefix=test_dataset_id
-        )
+    # dataset_trn = client.get_artifact_version(
+    #     name_id_or_prefix=train_dataset_id
+    #     )
+    # dataset_tst = client.get_artifact_version(
+    #     name_id_or_prefix=test_dataset_id
+    #     )
     
     # 1. grab annos from label studio
     
@@ -121,11 +130,17 @@ def training_pipeline(
     
     bucket = 'tubes-tape-exp-models'
     prefix = 'retinanet'
-    sess = sagemaker.Session()
     model_bucket_path = "s3://tubes-tape-exp-models/"
     s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
+    
+    sess = sagemaker.Session()
+    training_image = image_uris.retrieve(
 
-    training_image, data_channels = sagemaker_datachannels(sess,rec_name,bucket,prefix,model_bucket_path,s3_bucket)
+    region = sess.boto_region_name, framework = "object-detection", version="1")
+
+    print(training_image)
+
+    data_channels = sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
     
     # 5. define model
     
@@ -136,7 +151,7 @@ def training_pipeline(
         role = iam.get_role(RoleName='SkylerSageMakerRole')['Role']['Arn']
     region = 'us-east-1'
 
-    print('Sagemaker session :', sess)
+    #print('Sagemaker session :', sess)
     print('default bucket :', bucket)
     print('Prefix :', prefix)
     print('Region selected :', region)
@@ -144,7 +159,7 @@ def training_pipeline(
     
     inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
     
-    od_mdl = sagemaker_define_model(sess, role, inst_type, training_image, s3_output_location)
+    od_mdl = sagemaker_define_model(role, inst_type, training_image, s3_output_location)
 
     # 6. kickoff training
     
