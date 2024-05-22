@@ -15,6 +15,7 @@ import argparse
 
 import sagemaker
 from sagemaker import image_uris
+from sagemaker.workflow.pipeline_context import PipelineSession
 
 from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
 from uuid import UUID
@@ -128,42 +129,133 @@ def training_pipeline(
     
     # 4. invoke sagemaker, upload rec files to aws
     
+    sagemakerRoleName = 'SkylerSageMakerRole'
     bucket = 'tubes-tape-exp-models'
+    model_framework = "object-detection"
     prefix = 'retinanet'
     model_bucket_path = "s3://tubes-tape-exp-models/"
     s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
+    inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
+    region = 'us-east-1'
     
     sess = sagemaker.Session()
-    training_image = image_uris.retrieve(
 
-    region = sess.boto_region_name, framework = "object-detection", version="1")
-
-    print(training_image)
-
-    data_channels = sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
-    
-    # 5. define model
-    
     try:
         role = sagemaker.get_execution_role()
     except ValueError:
         iam = boto3.client('iam')
-        role = iam.get_role(RoleName='SkylerSageMakerRole')['Role']['Arn']
-    region = 'us-east-1'
-
+        role = iam.get_role(RoleName=sagemakerRoleName)['Role']['Arn']
+    
+    training_image = image_uris.retrieve(
+        region = sess.boto_region_name,
+        framework = model_framework,
+        version="1"
+    )
+    
     #print('Sagemaker session :', sess)
     print('default bucket :', bucket)
     print('Prefix :', prefix)
     print('Region selected :', region)
     print('IAM role :', role)
+    print(training_image)
     
-    inst_type = "ml.p3.8xlarge" #<---costly, but fast. 21 mins per 100 epochs for 500img dataset
+    # -----------############ Sagemaker Datachannel 
     
-    od_mdl = sagemaker_define_model(role, inst_type, training_image, s3_output_location)
+    s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
+    print('output location: ', s3_output_location)
 
+    training_image = image_uris.retrieve(
+
+        region = sess.boto_region_name, framework = "object-detection", version="1"
+    )
+
+    print(training_image)
+    
+    """
+    upload binary rec file to AWS
+    """
+    pipeline_session = PipelineSession(default_bucket = model_bucket_path)
+
+    # Upload the RecordIO files to train and validation channels
+
+    train_channel = "train"
+    validation_channel = "validation"
+
+    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=train_channel)
+    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=validation_channel)
+
+    print('what is sess default bucket: ', sess.default_bucket())
+
+    s3_train_data = f"s3://{s3_bucket}".format(bucket, train_channel)
+    s3_validation_data = f"s3://{s3_bucket}".format(bucket, validation_channel)
+
+    print(s3_train_data)
+    print(s3_validation_data)
+        
+    train_data = sagemaker.inputs.TrainingInput(
+        s3_train_data,
+        distribution="FullyReplicated",
+        content_type="application/x-recordio",
+        s3_data_type="S3Prefix",
+    )
+    validation_data = sagemaker.inputs.TrainingInput(
+        s3_validation_data,
+        distribution="FullyReplicated",
+        content_type="application/x-recordio",
+        s3_data_type="S3Prefix",
+    )
+    
+    print('data channels here!!')
+    data_channels = {"train": train_data, "validation": validation_data}
+    
+
+    #data_channels = sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
+    #sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
+    
+    # 5. define model
+
+    #od_mdl = sagemaker_define_model(role, inst_type, training_image, s3_output_location)
+    od_mdl = sagemaker.estimator.Estimator(
+        training_image,
+        role,
+        instance_count = 1,
+        instance_type = inst_type,
+        volume_size = 50,
+        max_run = 360000,
+        input_mode = "File",
+        output_path = s3_output_location,
+        sagemaker_session = sess
+    )
+    
+    num_classes = 4
+    num_training_samples = 768
+    num_epochs = 30
+    lr_steps = '33,67'
+    
+    print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
+
+    od_mdl.set_hyperparameters(base_network='resnet-50',
+                                 use_pretrained_model=1,
+                                 num_classes=num_classes,
+                                 mini_batch_size=64,
+                                 epochs=num_epochs,               
+                                 learning_rate=0.0002, 
+                                 lr_scheduler_step=lr_steps,      
+                                 lr_scheduler_factor=0.1,
+                                 optimizer='adam',
+                                 momentum=0.9,
+                                 weight_decay=0.0005,
+                                 overlap_threshold=0.5,
+                                 nms_threshold=0.45,
+                                 image_shape=512,
+                                 label_width=350,
+                                 num_training_samples=num_training_samples)
+    
     # 6. kickoff training
     
-    sagemaker_run_training(od_mdl,data_channels)
+    od_mdl.fit(inputs=data_channels, logs=True)
+    
+    #sagemaker_run_training(od_mdl,data_channels)
     print('model is kicked off in aws!')
 
     notify_on_success(after=["sagemaker_run_training"])
