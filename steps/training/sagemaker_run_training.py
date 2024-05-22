@@ -22,7 +22,6 @@ initiate training on AWS Sagemaker Object Detector
 #     od_model.fit(inputs=data_channels, logs=True)
     
 @step
-async def sagemaker_run_training(od_model,data_channels):
+def sagemaker_run_training(od_model,data_channels):
     od_model.fit(inputs=data_channels, logs=True)
     #run_model_fit(od_model,data_channels)
-    

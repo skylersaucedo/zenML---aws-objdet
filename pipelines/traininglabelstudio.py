@@ -164,5 +164,7 @@ def training_pipeline(
     # 6. kickoff training
     
     sagemaker_run_training(od_mdl,data_channels)
-    
+    print('model is kicked off in aws!')
+
     notify_on_success(after=["sagemaker_run_training"])
+    

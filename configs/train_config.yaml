@@ -29,12 +29,12 @@ settings:
 
 # configuration of steps  
 steps:
-  model_trainer:
-    parameters:
-      name: tsimlopsdti
-  promote_with_metric_compare:
-    parameters:
-      mlflow_model_name: tsimlopsdti
+  # model_trainer:
+  #   parameters:
+  #     name: tsimlopsdti
+  # promote_with_metric_compare:
+  #   parameters:
+  #     mlflow_model_name: tsimlopsdti
   notify_on_success:
     parameters:
       notify_on_success: False

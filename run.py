@@ -264,8 +264,8 @@ def main(
         print('run train agrs: ', run_args_train)
         
         #traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
-        training_pipeline.with_options(**pipeline_args)(**run_args_train)
-        #training_pipeline.with_options(**pipeline_args)()
+        #training_pipeline.with_options(**pipeline_args)(**run_args_train)
+        training_pipeline.with_options(**pipeline_args)()
         #training_pipeline.with_options()()
         #training_pipeline()
 
