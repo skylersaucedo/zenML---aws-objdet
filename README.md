@@ -10,7 +10,7 @@ This is a project that uses ZenML to manage and orchestrate an object detection 
 
 ### Dependencies
 
-* Make sure you are valid AWS credentials. You will also need access to the ZenML platform. 
+* Make sure you have valid AWS credentials, IAM Roles, and know your way around the awscli. You will also need access to the ZenML platform. 
 
 ### Installing
 
