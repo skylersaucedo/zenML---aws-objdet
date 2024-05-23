@@ -35,9 +35,9 @@ steps:
   # promote_with_metric_compare:
   #   parameters:
   #     mlflow_model_name: tsimlopsdti
-  notify_on_success:
-    parameters:
-      notify_on_success: False
+  # notify_on_success:
+  #   parameters:
+  #     notify_on_success: False
 
 # configuration of the Model Control Plane
 model:

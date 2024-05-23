@@ -10,6 +10,7 @@ import argparse
 from zenml import step
 from zenml.io import fileio
 from zenml.logger import get_logger
+from typing_extensions import Annotated
 
 logger = get_logger(__name__)
 
@@ -35,7 +36,9 @@ def one_hot_label(label):
     return r
 
 @step
-def generate_lst_file(df, lstname):
+def generate_lst_file(
+    df : pd.DataFrame, 
+    lstname: str) -> Annotated[str, "doneskis"] :
 
     final = [] # for lst
 
@@ -61,9 +64,12 @@ def generate_lst_file(df, lstname):
     """
     # now write out .lst file
     
+    print('writing LST file!!')
+    
     with open(lstname, 'w', newline = '') as out:
         for row in final:
             writer = csv.writer(out, delimiter = '\t')
             writer.writerow(row)
             
-    print('.lst is made here: ', lstname)
+    #print('.lst is made here: ', lstname)
+    return "done"

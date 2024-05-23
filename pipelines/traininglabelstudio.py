@@ -21,17 +21,23 @@ from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
 from uuid import UUID
 
 
+# from steps import (
+#     pull_annos_from_labelstudio,
+#     generate_lst_file,
+#     generate_rec_file,
+#     sagemaker_datachannels,
+#     sagemaker_define_model,
+#     sagemaker_run_training,
+#     notify_on_failure,
+#     notify_on_success
+# )
+
 from steps import (
     pull_annos_from_labelstudio,
     generate_lst_file,
     generate_rec_file,
-    sagemaker_datachannels,
-    sagemaker_define_model,
-    sagemaker_run_training,
     notify_on_failure,
-    notify_on_success
 )
-
 
 from zenml import pipeline
 from zenml.logger import get_logger
@@ -108,6 +114,8 @@ def training_pipeline(
 
     df = pull_annos_from_labelstudio(iscsv,csv_file_name)
     
+    print(df)
+    
     # pull labels, add to dict
     # @TODO: Need to flesh this out :)
     
@@ -115,7 +123,11 @@ def training_pipeline(
     
     lstname = LST_FILE_NAME
     
-    generate_lst_file(df, lstname)
+    status = 'NOT DONE'
+    
+    status = generate_lst_file(df, lstname)
+    
+    print('made lst file status: ', status)
     
     # 3. make rec file
     
@@ -229,7 +241,7 @@ def training_pipeline(
     
     num_classes = 4
     num_training_samples = 768
-    num_epochs = 30
+    num_epochs = 50
     lr_steps = '33,67'
     
     print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
@@ -257,6 +269,6 @@ def training_pipeline(
     
     #sagemaker_run_training(od_mdl,data_channels)
     print('model is kicked off in aws!')
-
-    notify_on_success(after=["sagemaker_run_training"])
+    
+    #notify_on_success(after=["sagemaker_run_training"])
     
