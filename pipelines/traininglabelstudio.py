@@ -225,9 +225,28 @@ def training_pipeline(
     #sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
     
     # 5. define model
+    
+    num_classes = 4
+    num_training_samples = 768
+    num_epochs = 50
+    lr_steps = '33,67'
+    base_network ='resnet-50'   
+    mini_batch_size = 64
+    lr = 0.0002
+    lrsf = 0.1
+    opt = 'adam'
+    momentum = 0.9
+    weight_decay = 0.0005
+    overlap_threshold=0.5
+    nms_threshold=0.45
+    image_shape=512
+    label_width=350
+    
+    print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
 
     #od_mdl = sagemaker_define_model(role, inst_type, training_image, s3_output_location)
     od_mdl = sagemaker.estimator.Estimator(
+        
         training_image,
         role,
         instance_count = 1,
@@ -239,28 +258,21 @@ def training_pipeline(
         sagemaker_session = sess
     )
     
-    num_classes = 4
-    num_training_samples = 768
-    num_epochs = 50
-    lr_steps = '33,67'
-    
-    print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
-
-    od_mdl.set_hyperparameters(base_network='resnet-50',
+    od_mdl.set_hyperparameters(base_network=base_network,
                                  use_pretrained_model=1,
                                  num_classes=num_classes,
-                                 mini_batch_size=64,
+                                 mini_batch_size=mini_batch_size,
                                  epochs=num_epochs,               
-                                 learning_rate=0.0002, 
+                                 learning_rate=lr, 
                                  lr_scheduler_step=lr_steps,      
-                                 lr_scheduler_factor=0.1,
-                                 optimizer='adam',
-                                 momentum=0.9,
-                                 weight_decay=0.0005,
-                                 overlap_threshold=0.5,
-                                 nms_threshold=0.45,
-                                 image_shape=512,
-                                 label_width=350,
+                                 lr_scheduler_factor=lrsf,
+                                 optimizer=opt,
+                                 momentum=momentum,
+                                 weight_decay=weight_decay,
+                                 overlap_threshold=overlap_threshold,
+                                 nms_threshold=nms_threshold,
+                                 image_shape=image_shape,
+                                 label_width=label_width,
                                  num_training_samples=num_training_samples)
     
     # 6. kickoff training
