@@ -8,14 +8,24 @@ import boto3
 from typing_extensions import Annotated
 from typing import Any, Dict, List, Optional
 
-
-logger = get_logger(__name__)
-
 """
 Make .rec file for AWS
 files must be locally downloaded, so EC2 instance 
 may be needed
+
+Args:
+    resize_val: int - image assumed square so len of side 
+    lstlocation: str - path where .lst file is
+    root_folder: str - path where root file exists
+    rec_name: str - output filename for .rec file
+    file_name: str - output s3 file name for .rec file
+    s3_bucket: str - AWS bucket name for .rec file
+    
+Returns:
+    string - "rec file made"
+    
 """
+logger = get_logger(__name__)
 
 @step
 def generate_rec_file(

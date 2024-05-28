@@ -10,3 +10,4 @@ opencv-python
 mxnet
 argparse
 sagemaker
+label_studio_sdk

@@ -30,7 +30,7 @@ returns train and test dataframes
 @step
 def pull_annos_from_labelstudio(
     iscsv : str, 
-    csv_file_name : str) -> pd.core.frame.DataFrame:
+    csv_file_name : str) -> pd.DataFrame:
     
     if iscsv:
         # use preloaded CSV file for df
@@ -42,6 +42,9 @@ def pull_annos_from_labelstudio(
     #train_df, test_df = train_test_split(df, test_size=1-split)
     
     else:
-        df = dataloader_labelstudio("1")
-    
+        df, target, random_state = dataloader_labelstudio("1")
+        
+        logger.info(f"pulled new data from: {target}")
+        logger.info(df.head())
+        
     return df

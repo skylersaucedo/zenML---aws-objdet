@@ -1,26 +1,9 @@
-# Apache Software License 2.0
-#
-# Copyright (c) ZenML GmbH 2024. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 
 import os
 from datetime import datetime as dt
 from typing import Optional
 from utils.constants import ZENML_MODEL_NAME
 import uuid
-
 import click
 
 # from pipelines import (
@@ -155,17 +138,7 @@ def main(
       * launching the pipeline
 
     Args:
-        no_cache: If `True` cache will be disabled.
-        no_drop_na: If `True` NA values will not be dropped from the dataset.
-        no_normalize: If `True` normalization will not be done for the dataset.
-        drop_columns: List of comma-separated names of columns to drop from the dataset.
-        test_size: Percentage of records from the training dataset to go into the test dataset.
-        min_train_accuracy: Minimum acceptable accuracy on the train set.
-        min_test_accuracy: Minimum acceptable accuracy on the test set.
-        fail_on_accuracy_quality_gates: If `True` and any of minimal accuracy
-            thresholds are violated - the pipeline will fail. If `False` thresholds will
-            not affect the pipeline.
-        only_inference: If `True` only inference pipeline will be triggered.
+        Add args here
     """
 
     # Run a pipeline with the required parameters. This executes
@@ -237,6 +210,40 @@ def main(
             "dataset_artifact_id": dataset_artifact_id,
             "model_artifact_id": model_artifact_id,
         }
+        
+        num_classes = 4
+        num_training_samples = 768
+        num_epochs = 50
+        lr_steps = '33,67'
+        base_network ='resnet-50'   
+        mini_batch_size = 64
+        lr = 0.0002
+        lrsf = 0.1
+        opt = 'adam'
+        momentum = 0.9
+        weight_decay = 0.0005
+        overlap_threshold=0.5
+        nms_threshold=0.45
+        image_shape=512
+        label_width=350
+        
+        training_args = {
+            "num_classes": num_classes,
+            "num_training_samples" :num_training_samples,
+            "num_epochs" : num_epochs,
+            "lr_steps" : lr_steps,
+            "base_network" : base_network,   
+            "mini_batch_size" : mini_batch_size,
+            "lr" : lr,
+            "lrsf" : lrsf,
+            "opt" :opt,
+            "momentum" : momentum,
+            "weight_decay" : weight_decay,
+            "overlap_threshold" : overlap_threshold,
+            "nms_threshold": nms_threshold,
+            "image_shape" : image_shape,
+            "label_width" : label_width
+        }
     
     # if not only_inference:
     #     # Execute Training Pipeline
@@ -265,7 +272,7 @@ def main(
         
         #traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
         #training_pipeline.with_options(**pipeline_args)(**run_args_train)
-        training_pipeline.with_options(**pipeline_args)()
+        training_pipeline.with_options(**pipeline_args)(**training_args)
         #training_pipeline.with_options()()
         #training_pipeline()
 

@@ -57,19 +57,18 @@ def generate_lst_file(
         y_max_n = float(row['ymax']) / h
         
         final.append([i, 2, 5, clss_lbl, x_min_n, y_min_n, x_max_n, y_max_n, s3_name])
-        print(i, 2, 5, clss_lbl, x_min_n, y_min_n, x_max_n, y_max_n, s3_name)
+        logger.info(f"lst input: {i, 2, 5, clss_lbl, x_min_n, y_min_n, x_max_n, y_max_n, s3_name}")
 
     """
     write LST file
     """
     # now write out .lst file
     
-    print('writing LST file!!')
+    logger.info("writing LST file..")
     
     with open(lstname, 'w', newline = '') as out:
         for row in final:
             writer = csv.writer(out, delimiter = '\t')
             writer.writerow(row)
             
-    #print('.lst is made here: ', lstname)
     return "lst file made"

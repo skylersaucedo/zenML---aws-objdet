@@ -34,7 +34,6 @@ output_filename = 'may14annotations.json'
 csv_path = os.getcwd() + "\\"+"may15annos.csv"
 
 # image must be saved locally to geenrate binary from img2rec.py
-# 
 
 def export_labelstudio_video_annos_csv(ls,id,csv_path):
     
@@ -72,9 +71,10 @@ def dataloader_labelstudio(
     
     target = "fixtargetlater"
     random_state = "999"
-    annotations = []
     img_data_savepath =  os.getcwd() + "\\"+ "May15-tape-exp-data"
     s3_bucket_savedimages = "tape-experiment-april6"
+    
+    annotations = []
     cols = ['local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame']
 
     for i, job in enumerate(tasks): # each task is a labeled video
@@ -188,6 +188,7 @@ def dataloader_labelstudio(
                         logger.info(f"ERROR with frame {frame} for {vid_s3_path}")
                     
     # make df
+    logger.info("dataframe generated!")
     return df, target, random_state
 
 
