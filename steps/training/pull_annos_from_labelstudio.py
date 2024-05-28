@@ -11,6 +11,7 @@ import argparse
 from zenml import step
 from zenml.io import fileio
 from zenml.logger import get_logger
+from typing_extensions import Annotated
 
 from steps.etl.dataloader_labelstudio import dataloader_labelstudio
 
@@ -27,7 +28,10 @@ returns train and test dataframes
 """
 
 @step
-def pull_annos_from_labelstudio(iscsv, csv_file_name):
+def pull_annos_from_labelstudio(
+    iscsv : str, 
+    csv_file_name : str) -> pd.core.frame.DataFrame:
+    
     if iscsv:
         # use preloaded CSV file for df
         df = pd.read_csv(csv_file_name)

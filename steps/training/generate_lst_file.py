@@ -38,7 +38,7 @@ def one_hot_label(label):
 @step
 def generate_lst_file(
     df : pd.DataFrame, 
-    lstname: str) -> Annotated[str, "doneskis"] :
+    lstname: str) -> Annotated[str, "lst file made"] :
 
     final = [] # for lst
 
@@ -72,4 +72,4 @@ def generate_lst_file(
             writer.writerow(row)
             
     #print('.lst is made here: ', lstname)
-    return "done"
+    return "lst file made"
