@@ -67,15 +67,21 @@ if not experiment_tracker or not isinstance(
 #@pipeline(on_failure=notify_on_failure, experiment_tracker=experiment_tracker.name)
 @pipeline(on_failure=notify_on_failure)
 def training_pipeline(
-    model_search_space: Dict[str, Any],
-    target_env: str,
-    test_size: float = 0.2,
-    drop_na: Optional[bool] = None,
-    normalize: Optional[bool] = None,
-    drop_columns: Optional[List[str]] = None,
-    min_train_accuracy: float = 0.0,
-    min_test_accuracy: float = 0.0,
-    fail_on_accuracy_quality_gates: bool = False,
+    num_classes: int,
+    num_training_samples: int,
+    num_epochs: int,
+    lr_steps: list,
+    base_network: str,   
+    mini_batch_size: int,
+    lr: float,
+    lrsf: float,
+    opt: str,
+    momentum: float,
+    weight_decay: float,
+    overlap_threshold: float,
+    nms_threshold: float,
+    image_shape: int,
+    label_width: int
 ):
     """
     Model training pipeline.
@@ -226,21 +232,21 @@ def training_pipeline(
     
     # 5. define model
     
-    num_classes = 4
-    num_training_samples = 768
-    num_epochs = 50
-    lr_steps = '33,67'
-    base_network ='resnet-50'   
-    mini_batch_size = 64
-    lr = 0.0002
-    lrsf = 0.1
-    opt = 'adam'
-    momentum = 0.9
-    weight_decay = 0.0005
-    overlap_threshold=0.5
-    nms_threshold=0.45
-    image_shape=512
-    label_width=350
+    # num_classes = 4
+    # num_training_samples = 768
+    # num_epochs = 50
+    # lr_steps = '33,67'
+    # base_network ='resnet-50'   
+    # mini_batch_size = 64
+    # lr = 0.0002
+    # lrsf = 0.1
+    # opt = 'adam'
+    # momentum = 0.9
+    # weight_decay = 0.0005
+    # overlap_threshold=0.5
+    # nms_threshold=0.45
+    # image_shape=512
+    # label_width=350
     
     print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
 

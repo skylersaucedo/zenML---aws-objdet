@@ -1,9 +1,7 @@
-
+import uuid 
 import os
 from datetime import datetime as dt
 from typing import Optional
-from utils.constants import ZENML_MODEL_NAME
-import uuid
 import click
 
 # from pipelines import (
@@ -16,6 +14,12 @@ from pipelines import (
     training_pipeline
     
 )
+
+from utils.constants import(
+    ZENML_MODEL_NAME,
+    TRAINING_CONFIG_PATH
+)
+
 
 from zenml.logger import get_logger
 from zenml.client import Client
@@ -177,7 +181,6 @@ def main(
         #     config_path = "configs/training_pipeline_remote_gpu.yaml"
             
         #config_path = "configs/training_pipeline.yaml"
-        config_path="configs/train_config.yaml"
         
         # training_pipeline.with_options(
         #     config_path="configs/train_config.yaml"
@@ -188,7 +191,20 @@ def main(
         #training_pipeline.with_options(config_path=config_path)
 
         #run_args_train = {}
-        pipeline_args = {"config_path" : config_path}
+        
+        if not client.active_stack.orchestrator.config.is_local:
+            raise RuntimeError(
+                "The implementation of this pipeline "
+                "requires that you are running on a local "
+                "machine with data being persisted in the local "
+                "filesystem across multiple steps. Please "
+                "switch to a stack that contains a local "
+                "orchestrator and a connected label-studio "
+                "annotator. See the README for more information "
+                "on this setup."
+            )
+            
+        pipeline_args = {"config_path" : TRAINING_CONFIG_PATH}
         
         
         num_epochs = 20
@@ -200,16 +216,16 @@ def main(
         dataset_artifact_id = str(uuid.uuid4())
         model_artifact_id = str(uuid.uuid4())
         
-        run_args_train = {
-            "num_epochs": num_epochs,
-            "train_batch_size": train_batch_size,
-            "eval_batch_size": eval_batch_size,
-            "learning_rate": learning_rate,
-            "weight_decay": weight_decay,
-            "img_size": img_size,
-            "dataset_artifact_id": dataset_artifact_id,
-            "model_artifact_id": model_artifact_id,
-        }
+        # run_args_train = {
+        #     "num_epochs": num_epochs,
+        #     "train_batch_size": train_batch_size,
+        #     "eval_batch_size": eval_batch_size,
+        #     "learning_rate": learning_rate,
+        #     "weight_decay": weight_decay,
+        #     "img_size": img_size,
+        #     "dataset_artifact_id": dataset_artifact_id,
+        #     "model_artifact_id": model_artifact_id,
+        # }
         
         num_classes = 4
         num_training_samples = 768
@@ -229,7 +245,7 @@ def main(
         
         training_args = {
             "num_classes": num_classes,
-            "num_training_samples" :num_training_samples,
+            "num_training_samples":num_training_samples,
             "num_epochs" : num_epochs,
             "lr_steps" : lr_steps,
             "base_network" : base_network,   
@@ -267,8 +283,11 @@ def main(
             f"tsimlopsdti_run_{dt.now().strftime('%Y_%m_%d_%H_%M_%S')}"
         )
         
+        print('type for pipeline_args: ', type(pipeline_args))
+        print('type for training_args: ', type(training_args))
+
         print('pipeline args: ', pipeline_args)
-        print('run train agrs: ', run_args_train)
+        print('run train agrs: ', training_args)
         
         #traininglabelstudio.with_options(**pipeline_args)(**run_args_train)
         #training_pipeline.with_options(**pipeline_args)(**run_args_train)

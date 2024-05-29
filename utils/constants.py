@@ -16,3 +16,5 @@ DATASET_DIR = "data/ships/subset"
 
 CSV_FILE_NAME = os.getcwd() + "\\"+"may15annos.csv"
 LST_FILE_NAME = os.getcwd() + "\\"+"tape-exp-test.lst"
+
+TRAINING_CONFIG_PATH = "configs/train_config.yaml"
