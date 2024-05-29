@@ -70,7 +70,7 @@ def training_pipeline(
     num_classes: int,
     num_training_samples: int,
     num_epochs: int,
-    lr_steps: list,
+    lr_steps: str,
     base_network: str,   
     mini_batch_size: int,
     lr: float,

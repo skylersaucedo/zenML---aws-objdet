@@ -205,7 +205,8 @@ def main(
             )
             
         pipeline_args = {"config_path" : TRAINING_CONFIG_PATH}
-        
+        #pipeline_args = {"target_env" : 'staging'}
+
         
         num_epochs = 20
         train_batch_size = 16

@@ -63,48 +63,49 @@ extra:
   notify_on_failure: True
 # pipeline level parameters
 parameters:
-  target_env: staging
-  # This set contains all the model configurations that you want 
-  # to evaluate during hyperparameter tuning stage.
-  model_search_space:
-    random_forest:
-      model_package: sklearn.ensemble
-      model_class: RandomForestClassifier
-      search_grid:
-        criterion:
-          - gini
-          - entropy
-        max_depth:
-          - 2
-          - 4
-          - 6
-          - 8
-          - 10
-          - 12
-        min_samples_leaf:
-          range:
-            start: 1
-            end: 10
-        n_estimators:
-          range:
-            start: 50
-            end: 500
-            step: 25
-    decision_tree:
-      model_package: sklearn.tree
-      model_class: DecisionTreeClassifier
-      search_grid:
-        criterion:
-          - gini
-          - entropy
-        max_depth:
-          - 2
-          - 4
-          - 6
-          - 8
-          - 10
-          - 12
-        min_samples_leaf:
-          range:
-            start: 1
-            end: 10
+  # config_path: default
+  # target_env: staging
+  # # This set contains all the model configurations that you want 
+  # # to evaluate during hyperparameter tuning stage.
+  # model_search_space:
+  #   random_forest:
+  #     model_package: sklearn.ensemble
+  #     model_class: RandomForestClassifier
+  #     search_grid:
+  #       criterion:
+  #         - gini
+  #         - entropy
+  #       max_depth:
+  #         - 2
+  #         - 4
+  #         - 6
+  #         - 8
+  #         - 10
+  #         - 12
+  #       min_samples_leaf:
+  #         range:
+  #           start: 1
+  #           end: 10
+  #       n_estimators:
+  #         range:
+  #           start: 50
+  #           end: 500
+  #           step: 25
+  #   decision_tree:
+  #     model_package: sklearn.tree
+  #     model_class: DecisionTreeClassifier
+  #     search_grid:
+  #       criterion:
+  #         - gini
+  #         - entropy
+  #       max_depth:
+  #         - 2
+  #         - 4
+  #         - 6
+  #         - 8
+  #         - 10
+  #         - 12
+  #       min_samples_leaf:
+  #         range:
+  #           start: 1
+  #           end: 10
