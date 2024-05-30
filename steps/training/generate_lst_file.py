@@ -1,12 +1,8 @@
 import random
 from typing import Any, Dict, List, Optional
 import cv2
-import boto3
 import pandas as pd
-import os
 import csv
-from sklearn.model_selection import train_test_split
-import argparse
 from zenml import step
 from zenml.io import fileio
 from zenml.logger import get_logger
@@ -14,26 +10,11 @@ from typing_extensions import Annotated
 
 logger = get_logger(__name__)
 
+from utils.current_labels import one_hot_label
 
 """
 prepare df for LST file
 """
-
-def one_hot_label(label):
-    """
-    one hot encode label from string to int
-    """
-    r = 4
-    if label == 'blue_tape':
-        r = 0
-    if label == 'black_tape':
-        r = 1
-    if label == 'gum':
-        r = 2
-    if label == 'leaf':
-        r = 3
-        
-    return r
 
 @step
 def generate_lst_file(

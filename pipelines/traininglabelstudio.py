@@ -122,28 +122,29 @@ def training_pipeline(
     
     print(df)
     
-    # pull labels, add to dict
-    # @TODO: Need to flesh this out :)
+    ###  ----- Using Train with the Image Format approach:
+    # https://docs.aws.amazon.com/sagemaker/latest/dg/object-detection.html
     
-    # 2. make lst file
+    # # pull labels, add to dict
+    # # @TODO: Need to flesh this out :)
     
-    lstname = LST_FILE_NAME
+    # # 2. make lst file
     
-    status = 'NOT DONE'
+    # lstname = LST_FILE_NAME
     
-    status = generate_lst_file(df, lstname)
+    # status = 'NOT DONE'
+    # status = generate_lst_file(df, lstname)
+    # print('made lst file status: ', status)
     
-    print('made lst file status: ', status)
+    # # 3. make rec file
     
-    # 3. make rec file
-    
-    resize_val = 512
-    lstlocation = 'tape-exp-test.lst'
-    root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data' #folder where images are stored locally
-    rec_name = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\tape-exp-test.rec'
-    file_name = 'tape-exp-test.rec'
-    s3_bucket = "tape-experiment-april6"
-    generate_rec_file(resize_val,lstlocation, root_folder, rec_name, file_name, s3_bucket )
+    # resize_val = 512
+    # lstlocation = 'tape-exp-test.lst'
+    # root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data' #folder where images are stored locally
+    # rec_name = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\tape-exp-test.rec'
+    # file_name = 'tape-exp-test.rec'
+    # s3_bucket = "tape-experiment-april6"
+    # generate_rec_file(resize_val,lstlocation, root_folder, rec_name, file_name, s3_bucket )
     
     # 4. invoke sagemaker, upload rec files to aws
     
