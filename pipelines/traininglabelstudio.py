@@ -73,33 +73,14 @@ def training_pipeline(
     """
     Model training pipeline.
 
-    This is a pipeline that loads the data, processes it and splits
-    it into train and test sets, then search for best hyperparameters,
-    trains and evaluates a model.
+    This is a pipeline - flesh out description later...
 
     Args:
-        model_search_space: Search space for hyperparameter tuning
-        target_env: The environment to promote the model to
-        test_size: Size of holdout set for training 0.0..1.0
-        drop_na: If `True` NA values will be removed from dataset
-        normalize: If `True` dataset will be normalized with MinMaxScaler
-        drop_columns: List of columns to drop from dataset
-        min_train_accuracy: Threshold to stop execution if train set accuracy is lower
-        min_test_accuracy: Threshold to stop execution if test set accuracy is lower
-        fail_on_accuracy_quality_gates: If `True` and `min_train_accuracy` or `min_test_accuracy`
-            are not met - execution will be interrupted early
+
     """
     #train_dataset_id: Optional[UUID] = None,
     #test_dataset_id: Optional[UUID] = None,
 
-    
-    # dataset_trn = client.get_artifact_version(
-    #     name_id_or_prefix=train_dataset_id
-    #     )
-    # dataset_tst = client.get_artifact_version(
-    #     name_id_or_prefix=test_dataset_id
-    #     )
-    
     # 1. grab annos from label studio
     
     csv_file_name = CSV_FILE_NAME
@@ -112,6 +93,8 @@ def training_pipeline(
     # 2. Send images and JSON annotations to AWS S3
     
     status = send_data_to_s3(df)
+    
+    ### @TODO - Check to see if image already exists in bucket!
     
     print('data sent to s3? ', status)
     
@@ -128,7 +111,7 @@ def training_pipeline(
     s3_train_anno = 's3://{}/'.format(annos_bucket)
     s3_val_anno = 's3://{}/'.format(annos_bucket)
     
-    # 4. invoke sagemaker, upload rec files to aws
+    # 4. invoke sagemaker, spool up session
     
     sagemakerRoleName = 'SkylerSageMakerRole'
     bucket = 'tubes-tape-exp-models'
@@ -140,6 +123,7 @@ def training_pipeline(
     region = 'us-east-1'
     
     sess = sagemaker.Session()
+    print('Sagemaker session :', sess)
 
     try:
         role = sagemaker.get_execution_role()
@@ -153,14 +137,13 @@ def training_pipeline(
         version="1"
     )
     
-    #print('Sagemaker session :', sess)
     print('default bucket :', bucket)
     print('Prefix :', prefix)
     print('Region selected :', region)
     print('IAM role :', role)
     print(training_image)
     
-    # -----------############ Sagemaker Pipeline object
+    # 5. Spool up Sagemaker Pipeline training object
     model_bucket_path = "s3://tubes-tape-exp-models/"
     training_image = image_uris.retrieve(
 
@@ -170,15 +153,14 @@ def training_pipeline(
     print(training_image)
 
     """
-    define pipeline bucket 
+    define pipeline session and buckets 
     """
+    
     pipeline_session = PipelineSession(default_bucket = model_bucket_path)
     print(pipeline_session)
     
-    
     ### ----- define sagemaker training inputs
         
-            
     train_data_images = sagemaker.inputs.TrainingInput(
         s3_train_images,
         distribution="FullyReplicated",
@@ -213,31 +195,10 @@ def training_pipeline(
         "validation_annotation" : validation_data_annotations
         }
     
-
-    #data_channels = sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
-    #sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)
-    
-    # 5. define model
-    
-    # num_classes = 4
-    # num_training_samples = 768
-    # num_epochs = 50
-    # lr_steps = '33,67'
-    # base_network ='resnet-50'   
-    # mini_batch_size = 64
-    # lr = 0.0002
-    # lrsf = 0.1
-    # opt = 'adam'
-    # momentum = 0.9
-    # weight_decay = 0.0005
-    # overlap_threshold=0.5
-    # nms_threshold=0.45
-    # image_shape=512
-    # label_width=350
-    
     print('num classes: {}, num training images: {}'.format(num_classes, num_training_samples))
+    
+    # 6. kickoff training
 
-    #od_mdl = sagemaker_define_model(role, inst_type, training_image, s3_output_location)
     od_mdl = sagemaker.estimator.Estimator(
         
         training_image,
@@ -267,12 +228,9 @@ def training_pipeline(
                                  image_shape=image_shape,
                                  label_width=label_width,
                                  num_training_samples=num_training_samples)
-    
-    # 6. kickoff training
-    
+        
     od_mdl.fit(inputs=data_channels, logs=True)
     
-    #sagemaker_run_training(od_mdl,data_channels)
     print('model is kicked off in aws!')
     
     #notify_on_success(after=["sagemaker_run_training"])
