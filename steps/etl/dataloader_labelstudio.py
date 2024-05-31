@@ -51,20 +51,18 @@ def export_labelstudio_video_annotations(ls,id):
     return tasks
 
 @step
-def dataloader_labelstudio(
-    labelstudioid:int
-) -> Tuple[
+def dataloader_labelstudio(labelstudioid:int) -> Tuple[
     Annotated[pd.DataFrame, "dataset"],
     Annotated[str, "target"],
-    Annotated[int,"random_state"],
-]:
+    Annotated[int,"random_state"]]:
+    
     """
-    pass label studio tasks JSON object, return dataframe 
+    GET label studio tasks JSON object, return dataframe 
     task is JSON video label
     dataframe will have: 
     'local_filepath','filename','label','xmin','xmax','ymin','ymax','pipe_id','dt','side','passnum','cam','video_name','frame'
-    ### images saved locally and to AWS s3 bucket
     """
+    
     # Initialize the Label Studio SDK client with the additional headers
     ls = Client(url=API_ROOT, api_key=LS_API_TOKEN)
     tasks = export_labelstudio_video_annotations(ls,id)
@@ -85,7 +83,7 @@ def dataloader_labelstudio(
         if len(annos) == 1: # video is annotated
                     
             vid_s3_path = data['video']
-            logger.info(f"viewing annos for: {vid_s3_path} ")
+            print(f"viewing annos for: {vid_s3_path} ")
             
             # @TODO: flesh out info from vid name...
             pipe_id = '1000'
@@ -167,21 +165,16 @@ def dataloader_labelstudio(
                         
                         dt = datetime.today().strftime('%Y%m%d%H%M%S')
                         
-                        filename = f"{pipe_id}_{dt}_{side}_{passnum}_{cam}_{frame}_{label}.png"
+                        #filename = f"{pipe_id}_{dt}_{side}_{passnum}_{cam}_{frame}_{label}.png"
+                        filename = f"{i}_{j}_{side}_{passnum}_{cam}_{frame}_{label}.png"
                         local_filepath = img_data_savepath + '\\' + filename
-                        cv2.imwrite(local_filepath, f_p) # save image locally
-
-                        # send image to s3
-                        s3b = boto3.resource('s3')
-                        s3b.Bucket(s3_bucket_savedimages).upload_file(local_filepath, filename)
-                        
-                        #print('file saved to s3!', local_filepath)
-                        logger.info(f"file saved to s3! {local_filepath} ")
-                        
+                    
                         # add image, annotation, label, to dataframe 
                         annotations.append([local_filepath,filename,label,xmin,xmax,ymin,ymax,pipe_id,dt,side,passnum,cam,filename,frame])
                         # make df
                         df = pd.DataFrame(data=annotations, columns=cols)
+                        
+                        logger.info('df')
                         
                     else:
                         #print('ERROR  with frame for: ', vid_s3_path)
@@ -190,6 +183,7 @@ def dataloader_labelstudio(
     # make df
     logger.info("dataframe generated!")
     return df, target, random_state
+
 
 
 

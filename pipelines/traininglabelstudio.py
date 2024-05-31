@@ -122,29 +122,7 @@ def training_pipeline(
     
     print(df)
     
-    ###  ----- Using Train with the Image Format approach:
-    # https://docs.aws.amazon.com/sagemaker/latest/dg/object-detection.html
-    
-    # # pull labels, add to dict
-    # # @TODO: Need to flesh this out :)
-    
-    # # 2. make lst file
-    
-    # lstname = LST_FILE_NAME
-    
-    # status = 'NOT DONE'
-    # status = generate_lst_file(df, lstname)
-    # print('made lst file status: ', status)
-    
-    # # 3. make rec file
-    
-    # resize_val = 512
-    # lstlocation = 'tape-exp-test.lst'
-    # root_folder = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\May15-tape-exp-data' #folder where images are stored locally
-    # rec_name = r'C:\Users\Administrator\Desktop\notebooks-for-ml-ops\tape-exp-test.rec'
-    # file_name = 'tape-exp-test.rec'
-    # s3_bucket = "tape-experiment-april6"
-    # generate_rec_file(resize_val,lstlocation, root_folder, rec_name, file_name, s3_bucket )
+    # 2. Send images and JSON annotations to AWS S3
     
     # 4. invoke sagemaker, upload rec files to aws
     

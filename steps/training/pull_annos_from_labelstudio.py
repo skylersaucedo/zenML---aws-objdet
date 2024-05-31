@@ -44,6 +44,8 @@ def pull_annos_from_labelstudio(
     else:
         df, target, random_state = dataloader_labelstudio("1")
         
+        df = dataloader_labelstudio()
+        
         logger.info(f"pulled new data from: {target}")
         logger.info(df.head())
         
