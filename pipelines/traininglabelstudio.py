@@ -20,22 +20,9 @@ from sagemaker.workflow.pipeline_context import PipelineSession
 from utils.constants import CSV_FILE_NAME, LST_FILE_NAME
 from uuid import UUID
 
-
-# from steps import (
-#     pull_annos_from_labelstudio,
-#     generate_lst_file,
-#     generate_rec_file,
-#     sagemaker_datachannels,
-#     sagemaker_define_model,
-#     sagemaker_run_training,
-#     notify_on_failure,
-#     notify_on_success
-# )
-
 from steps import (
     pull_annos_from_labelstudio,
-    generate_lst_file,
-    generate_rec_file,
+    send_data_to_s3,
     notify_on_failure,
 )
 
@@ -124,6 +111,23 @@ def training_pipeline(
     
     # 2. Send images and JSON annotations to AWS S3
     
+    status = send_data_to_s3(df)
+    
+    print('data sent to s3? ', status)
+    
+    # 3. define image and anno channels
+    
+    ## images and jsons are in S3 buckets, 
+    # test channels to see if training spools up
+    images_bucket = 'tape-exp-images-may30'
+    annos_bucket = 'tape-exp-annos-may30'
+
+    # same buckets for now, change later!
+    s3_train_images = 's3://{}/'.format(images_bucket)
+    s3_val_images = 's3://{}/'.format(images_bucket)
+    s3_train_anno = 's3://{}/'.format(annos_bucket)
+    s3_val_anno = 's3://{}/'.format(annos_bucket)
+    
     # 4. invoke sagemaker, upload rec files to aws
     
     sagemakerRoleName = 'SkylerSageMakerRole'
@@ -156,54 +160,58 @@ def training_pipeline(
     print('IAM role :', role)
     print(training_image)
     
-    # -----------############ Sagemaker Datachannel 
-    
-    s3_output_location = "s3://{}/{}/output".format(bucket,prefix)
-    print('output location: ', s3_output_location)
-
+    # -----------############ Sagemaker Pipeline object
+    model_bucket_path = "s3://tubes-tape-exp-models/"
     training_image = image_uris.retrieve(
 
         region = sess.boto_region_name, framework = "object-detection", version="1"
     )
 
     print(training_image)
-    
+
     """
-    upload binary rec file to AWS
+    define pipeline bucket 
     """
     pipeline_session = PipelineSession(default_bucket = model_bucket_path)
-
-    # Upload the RecordIO files to train and validation channels
-
-    train_channel = "train"
-    validation_channel = "validation"
-
-    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=train_channel)
-    sess.upload_data(path=rec_name, bucket=bucket, key_prefix=validation_channel)
-
-    print('what is sess default bucket: ', sess.default_bucket())
-
-    s3_train_data = f"s3://{s3_bucket}".format(bucket, train_channel)
-    s3_validation_data = f"s3://{s3_bucket}".format(bucket, validation_channel)
-
-    print(s3_train_data)
-    print(s3_validation_data)
-        
-    train_data = sagemaker.inputs.TrainingInput(
-        s3_train_data,
-        distribution="FullyReplicated",
-        content_type="application/x-recordio",
-        s3_data_type="S3Prefix",
-    )
-    validation_data = sagemaker.inputs.TrainingInput(
-        s3_validation_data,
-        distribution="FullyReplicated",
-        content_type="application/x-recordio",
-        s3_data_type="S3Prefix",
-    )
+    print(pipeline_session)
     
+    
+    ### ----- define sagemaker training inputs
+        
+            
+    train_data_images = sagemaker.inputs.TrainingInput(
+        s3_train_images,
+        distribution="FullyReplicated",
+        content_type="application/x-image",
+        s3_data_type="S3Prefix",
+    )
+    validation_data_images = sagemaker.inputs.TrainingInput(
+        s3_val_images,
+        distribution="FullyReplicated",
+        content_type="application/x-image",
+        s3_data_type="S3Prefix",
+    )
+
+    train_data_annotations = sagemaker.inputs.TrainingInput(
+        s3_train_anno,
+        distribution="FullyReplicated",
+        content_type="application/x-image",
+        s3_data_type="S3Prefix",
+    )
+    validation_data_annotations = sagemaker.inputs.TrainingInput(
+        s3_val_anno,
+        distribution="FullyReplicated",
+        content_type="application/x-image",
+        s3_data_type="S3Prefix",
+    )
+
     print('data channels here!!')
-    data_channels = {"train": train_data, "validation": validation_data}
+    data_channels = {
+        "train": train_data_images, 
+        "validation": validation_data_images,
+        "train_annotation" : train_data_annotations,
+        "validation_annotation" : validation_data_annotations
+        }
     
 
     #data_channels = sagemaker_datachannels(rec_name,bucket,prefix,model_bucket_path,s3_bucket)

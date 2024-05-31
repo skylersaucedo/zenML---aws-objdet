@@ -85,7 +85,6 @@ def send_data_to_s3(
             # plt.title(label)
             # plt.show()
 
-            
             # save anno to s3
             
             anno_filename = s[0] +'.json'
@@ -98,5 +97,5 @@ def send_data_to_s3(
             s3.Bucket(images_bucket).upload_file(img_pth, filename)
             logger.info('file saved to s3!', filename)
             
-            return "sent stuff to s3!"
+    return "sent stuff to s3!"
                     
