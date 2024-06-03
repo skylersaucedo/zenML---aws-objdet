@@ -105,8 +105,6 @@ def main(
                 "on this setup."
             )
             
-        pipeline_args = {"config_path" : TRAINING_CONFIG_PATH}
-        num_epochs = 20
         train_batch_size = 16
         eval_batch_size = 8
         learning_rate = 1e-4
@@ -147,6 +145,15 @@ def main(
             "image_shape" : image_shape,
             "label_width" : label_width
         }
+        
+        # pipeline_args = {"config_path" : TRAINING_CONFIG_PATH,
+        #                  "images_bucket" : 's3://{}/'.format('tape-exp-images-may30'),
+        #                  "annos_bucket" : 's3://{}/'.format('tape-exp-annos-may30')
+        #                  }
+        
+        pipeline_args = {"config_path" : TRAINING_CONFIG_PATH,
+                    }
+
     
         pipeline_args["config_path"] = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
